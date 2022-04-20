@@ -98,7 +98,7 @@ def l2_dist(x1: Tensor, x2: Tensor):
 
 
 def accuracy(y: Tensor, y_pred: Tensor):
-    """              
+    """
     Calculate prediction accuracy: the fraction of predictions in that are
     equal to the ground truth.
     :param y: Ground truth tensor of shape (N,)
