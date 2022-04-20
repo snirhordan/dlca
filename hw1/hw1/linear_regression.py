@@ -32,7 +32,8 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         y_pred = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        result = np.matmul(X,self.weights_)
+        y_pred = result
         # ========================
 
         return y_pred
@@ -51,7 +52,12 @@ class LinearRegressor(BaseEstimator, RegressorMixin):
 
         w_opt = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x_squared = np.matmul(X.T, X)
+        without_bias = np.eye(X.shape[1])
+        without_bias[0,0] = 0
+        first_matrix = np.linalg.inv((x_squared + (self.reg_lambda * (1.0 * X.shape[0])) * without_bias))
+        second_matrix = np.matmul(X.T, y) 
+        w_opt = np.matmul(first_matrix , second_matrix )
         # ========================
 
         self.weights_ = w_opt
@@ -77,7 +83,13 @@ def fit_predict_dataframe(
     """
     # TODO: Implement according to the docstring description.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    if not feature_names is None:
+        X =  df[feature_names].values
+        y = df[target_name].values
+    else:
+        X = df.drop(target_name, axis=1).values
+        y = df[target_name].values
+    y_pred = model.fit_predict(X,y)
     # ========================
     return y_pred
 
@@ -100,7 +112,7 @@ class BiasTrickTransformer(BaseEstimator, TransformerMixin):
 
         xb = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        xb = np.hstack(((np.ones(X.shape[0]).reshape(-1, 1)), X))
         # ========================
 
         return xb
@@ -117,7 +129,6 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
         # TODO: Your custom initialization, if needed
         # Add any hyperparameters you need and save them as above
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
         # ========================
 
     def fit(self, X, y=None):
@@ -139,7 +150,8 @@ class BostonFeaturesTransformer(BaseEstimator, TransformerMixin):
 
         X_transformed = None
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        X[:, 0] = 1.0 / X[:, 0]
+        X_transformed = PolynomialFeatures(self.degree).fit_transform(X)
         # ========================
 
         return X_transformed
@@ -163,7 +175,13 @@ def top_correlated_features(df: DataFrame, target_feature, n=5):
     # TODO: Calculate correlations with target and sort features by it
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    difference = df - (np.sum(df) / len(df))
+    std = np.sqrt(np.sum(np.power(difference, 2)))
+    cov = np.sum(np.multiply((difference.T),(difference[target_feature].T)).T)
+    correlations = np.divide(cov, (std * std[target_feature]))
+    arg_sort_corr = np.flip(np.argsort(np.abs(correlations)))
+    top_n_corr = correlations[arg_sort_corr[1:n + 1]]
+    top_n_features = df.columns[arg_sort_corr[1:n + 1]]
     # ========================
 
     return top_n_features, top_n_corr
@@ -179,7 +197,7 @@ def mse_score(y: np.ndarray, y_pred: np.ndarray):
 
     # TODO: Implement MSE using numpy.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    mse = sum((y - y_pred) ** 2) / (len(y))
     # ========================
     return mse
 
@@ -194,7 +212,7 @@ def r2_score(y: np.ndarray, y_pred: np.ndarray):
 
     # TODO: Implement R^2 using numpy.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    r2 = 1 - (np.divide(np.sum((y - y_pred) ** 2), sum((y - (sum(y) / len(y))) ** 2)))
     # ========================
     return r2
 
@@ -227,7 +245,12 @@ def cv_best_hyperparams(
     #  - You can use MSE or R^2 as a score.
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    search = {}
+    search['bostonfeaturestransformer__degree'] = degree_range
+    search['linearregressor__reg_lambda'] = lambda_range
+    param_optimizer = sklearn.model_selection.GridSearchCV(estimator = model, param_grid = search,
+                                                           scoring = 'neg_mean_squared_error', cv = k_folds).fit(X,y)
+    best_params = param_optimizer.best_params_
     # ========================
 
     return best_params
