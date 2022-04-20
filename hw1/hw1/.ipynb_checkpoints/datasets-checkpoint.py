@@ -85,7 +85,9 @@ class RandomImageDataset(Dataset):
         #  the random state outside this method.
         #  Raise a ValueError if the index is out of range.
         # ====== YOUR CODE: ======
-        
+        if index >= self.num_samples:
+            raise ValueError()
+        with torch_temporary_seed
         # ========================
 
     def __len__(self):

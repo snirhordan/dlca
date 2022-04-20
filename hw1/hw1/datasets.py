@@ -17,26 +17,15 @@ def random_labelled_image(
     :param dtype: Data type of the returned image tensor.
     :return: A tuple containing the generated image tensor and it's label.
     """
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
     # TODO:
     #  Implement according to the docstring description.
     # ====== YOUR CODE: ======
     image = (high-low)*torch.rand(shape) + low
     label = torch.randint(0, num_classes-1, (1,))
-=======
->>>>>>> Stashed changes
-    val = high - low
-    image = (val * torch.rand(shape) + low).type(dtype)
-    label = torch.randint(0, num_classes, (1,))
-    label = int(label[0])
-<<<<<<< Updated upstream
-=======
->>>>>>> ba971dbd74ce7553eac682a6b6f5a3b8a3da2cd1
->>>>>>> Stashed changes
     # ========================
     return image, label.item()
+
+
 
 @contextmanager
 def torch_temporary_seed(seed: int):
@@ -49,7 +38,7 @@ def torch_temporary_seed(seed: int):
     #  Implement this context manager as described.
     #  See torch.random.get/set_rng_state(), torch.random.manual_seed().
     # ====== YOUR CODE: ======
-    previous_number = torch.random.get_rng_state()
+    state = torch.get_rng_state()
     # ========================
     try:
         # ====== YOUR CODE: ======
@@ -58,8 +47,9 @@ def torch_temporary_seed(seed: int):
         yield
     finally:
         # ====== YOUR CODE: ======
-        torch.random.set_rng_state(previous_number)
+        torch.set_rng_state(state)
         # ========================
+
 
 
 class RandomImageDataset(Dataset):
@@ -95,22 +85,11 @@ class RandomImageDataset(Dataset):
         #  the random state outside this method.
         #  Raise a ValueError if the index is out of range.
         # ====== YOUR CODE: ======
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-        
-=======
->>>>>>> Stashed changes
-        if  index <= -1 or index >= self.num_samples:
+        if index >= self.num_samples:
             raise ValueError()
-
         with torch_temporary_seed(index):
-            sample, label = random_labelled_image(self.image_dim, self.num_classes)
-        return sample, label
-<<<<<<< Updated upstream
-=======
->>>>>>> ba971dbd74ce7553eac682a6b6f5a3b8a3da2cd1
->>>>>>> Stashed changes
+            X, y = random_labelled_image(self.image_dim, self.num_classes)
+        return (X, y)
         # ========================
 
     def __len__(self):
@@ -147,8 +126,7 @@ class ImageStreamDataset(IterableDataset):
         #  Yield tuples to produce an iterator over random images and labels.
         #  The iterator should produce an infinite stream of data.
         # ====== YOUR CODE: ======
-        while 1==1:
-            yield random_labelled_image(self.image_dim, self.num_classes)
+        raise NotImplementedError()
         # ========================
 
 
@@ -176,12 +154,10 @@ class SubsetDataset(Dataset):
         #  Return the item at index + offset from the source dataset.
         #  Raise an IndexError if index is out of bounds.
         # ====== YOUR CODE: ======
-        if index <= -1 or index >= self.subset_len:
-            raise IndexError()
-        return self.source_dataset[index + self.offset]
+        raise NotImplementedError()
         # ========================
 
     def __len__(self):
         # ====== YOUR CODE: ======
-        return self.subset_len
+        raise NotImplementedError()
         # ========================
