@@ -87,7 +87,9 @@ class RandomImageDataset(Dataset):
         # ====== YOUR CODE: ======
         if index >= self.num_samples:
             raise ValueError()
-        with torch_temporary_seed
+        with torch_temporary_seed(index):
+            X, y = random_labelled_image(self.image_dim, self.num_classes)
+        return (X, y)
         # ========================
 
     def __len__(self):
@@ -124,7 +126,7 @@ class ImageStreamDataset(IterableDataset):
         #  Yield tuples to produce an iterator over random images and labels.
         #  The iterator should produce an infinite stream of data.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        
         # ========================
 
 

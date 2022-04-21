@@ -126,7 +126,7 @@ class ImageStreamDataset(IterableDataset):
         #  Yield tuples to produce an iterator over random images and labels.
         #  The iterator should produce an infinite stream of data.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        iter(random_labelled_image(self.image_dim, self.num_classes))
         # ========================
 
 
