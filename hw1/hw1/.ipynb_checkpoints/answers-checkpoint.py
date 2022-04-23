@@ -45,10 +45,9 @@ An equation: $e^{i\pi} -1 = 0$
 
 part1_q2 = r"""
 **Your answer:**
-    No , although adding regulization affects the loss function, where $\lambda$ is hyper parameter 
-    chosen after different values, regularization inhances overfitting on our model, but here in the question
-    the fried used the test set, which is the wrong set to choose in this case.
-
+    Although regularization done right would improve the model's generalization, in this case, it is not performed correctly. Choosing the hyperparameters of 
+    the model based on perfoemence against the test dataset will lead to overfitting, i.e. a high generalizaiton error.
+    The optimal is using k-fold validation to choose the right hyperparameters without accessing the test dataset.
 
 Write your answer using **markdown** and $\LaTeX$:
 ```python
@@ -87,14 +86,20 @@ An equation: $e^{i\pi} -1 = 0$
 part2_q2 = r"""
 **Your answer:**
 
-    1. This approach delivers model that are very much dependant on the data analyzed in the train set,
+    1. This approach delivers models that are very much dependant on the data analyzed in the train set,
        thus it may lead to a model which overfits itself to the data that it knows already, and so the generalization
        ability of this model is poor.
-       On the other hand K-fold CV validates the model and its performance on new data, that was not used for building the model,
-       this provides a model with better generalization ability.
-       
-    2. The K-fold CV evaluates the model based on the validation set, which normally consists of data that can be found both in the 
-       training and the test sets, and so delivers a more general model.
+       On the other hand, when using K-fold CV, during each fold we train the model on a subset of the training dataset
+       and validate it against the rest of the  training dataset. In this way, we don't train and validate the model on the same data (in each fold).
+    2. This approach yields a model that overfits the test dataset. That is because when choosing a model that minimizes the test error, if the test dataset is 
+        too small or not representative of the underlying distribution of the entire dataset, thus the model we picked would have have high generalization error.
+    
+        When using k-fold cross validation, when picking the best model, for example using different hyperparameters of some model, we evaluate each model's 
+    average performence over all the folds. 
+    
+    Each training-validation fold is independent of the test dataset. 
+    This has a twofold advantage: during every fold we don't access the test dataset and therefore don't overfit on the ultimate criterion of the model and
+    averaging the performence over several folds, rather than relying on one as in the train-test scenario, diminishes overfitting on the validation dataset.  
        
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -134,12 +139,15 @@ part3_q2 = r"""
 **Your answer:**
     
     1.The linear model produces an avarage representation per class , when the model sees a familiar image, it classifies it 
-     according to the most similar image known to it.
+     according to the most similar representation.
+     Essentially the classifier learns which areas of the image is most likely to be "activated" for each digit. In the weight images this can be seen as particular regions of the canvas having more weight than others.
+     For example, the digit zero has weights of high magnitude spread out over the canvas, in contrast with the weights of the digit 3, which schematically appear to be horizontal strips on the canvas. The shaoe 0 is sevenly spread out whilst 3 is concentrated around the horizontl strips on the canvas.
      As a result of this we noticed some falsely classified images.
 
     2. K-nn is a naive algorithm, it classifies the sample according to its K nearest neighbours in its dataset.
-       Difference between the two models is that KNN does not use different weights for different neighbours,
-       which causes it to be less representative and more naive.
+       The linear model learns features over the entire dataset and given a new instance classifies it according to which regions it is mostly written in and which digit is most likely to be written in those regions based on the entire training dataset.
+       k-NN only classifies in accordance with the similarity of the new instance with its k neighbors, which don't even snecessarily contain all the available labels. 
+       This means the linear model generalizes the regions where each digit is written by learning a representation of likely regions activated through training over the entire training dataset. In contrast, the k-NN model only take into account local behavior of the dataset.
 
 
 Write your answer using **markdown** and $\LaTeX$:
