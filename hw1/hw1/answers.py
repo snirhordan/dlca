@@ -208,14 +208,25 @@ An equation: $e^{i\pi} -1 = 0$
 
 part4_q2 = r"""
 **Your answer:**
+    In general adding non-linear transformations to our dataset lets the classifier train on a more descriptive higher-dimensional space where a linear 
+    regresson might better fit the dataset.
+    
     1. We can look at the model as a linear regression with higher dimensions, we can see that the non-linearity in our case is not
        in the model and its parameters, rather in the dataset itself.
         
-    2. No, we can't do that, because there are some functions that can't be fit this way, for example:
-       $e^{ax}$, $log(bx)$ where a and b are weights.
+    2. When fittimg non-linear transformation on the dataset we expect the dataset to "behave" more like a linear function on the higher dimensional space and 
+    thus giving us a better classification result using Linear Regression on that space.
+    The only impediment to transformin the data is if the non-linear function is not defined for some valuse of a feature. Otherwise, there is no restriction 
+    on what non-linearity to use.
+    
     
     3. The effect of adding non-linear features to our data is the same as adding more features to our data. 
-       It gives our model more dimensions to find the right hyperplane.
+       The model can generalize relationships among the features that are more intricate.
+       In Section 3, we fed the model untempered data and recieved a separating hyperplane.
+       When we add more features, we undergo the same training as before, i.e. fimdimg the linear classifier for each class with best margin, yet on a higher 
+       dimensional feature space. 
+       Our resulting classfier will remain linear, that is the decision boundary will be a hyperplane in some higher dimensional feature space, depenedent on 
+       the feature transformations we applied.
        
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -229,9 +240,13 @@ An equation: $e^{i\pi} -1 = 0$
 
 part4_q3 = r"""
 **Your answer:**
-    1.In the logspace case we get that the effect between jumps of consecutive numbers is negligible, 
+
+    1. 
+    In the logspace case we get that the effect between jumps of consecutive numbers is negligible, 
       however a change in jumps of 10 times can be seen.
       In other words, this approach focuses on significant changes.
+      When using CV to choose best hyprparameters we want to minimze the number of combination of hyperparamers we check. Checking too many hyperparametrs that only pose a negligible improvement in the model wastes memory and computation resources. 
+      In this case, the values of $\lambda$ affect the performence of the model similarly when are in some range of numbers, therefore there is no need to check each number in the range but to sample one of them. Using lospace we iterate over an exponentially increasing sequence in which each element increases drastically from the previous one.
       
      2. The model was fitted 180 times.
         This can be explained because we have 60 different combinations of the parameters, and 
