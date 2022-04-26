@@ -113,7 +113,7 @@ class LinearClassifier(object):
                 self.weights = self.weights - (learn_rate * grad / (epoch_idx + 1))
                 accumelated_accuracy += self.evaluate_accuracy(y,y_p)
                 
-                const = 0.5 * weight_decay * torch.norm(self.weights)
+                const = 0.5 * weight_decay * (torch.norm(self.weights)**2)
                 accumelated_loss += loss + const
            
             total_loss = accumelated_loss / len(dl_train)
@@ -128,7 +128,7 @@ class LinearClassifier(object):
                 y_pred, x_scores = self.predict(x_valid)
                 accumelated_accuracy += self.evaluate_accuracy(y_valid, y_pred)
                 loss = loss_fn(x_valid, y_valid, x_scores, y_pred)
-                accumelated_loss += loss + (1.5 * weight_decay * torch.norm(self.weights))
+                accumelated_loss += loss + (0.5 * weight_decay * (torch.norm(self.weights)**2))
             total_loss = accumelated_loss / len(dl_valid)
             total_accuracy = accumelated_accuracy / len(dl_valid)
             valid_res.loss.append(total_loss)
@@ -153,10 +153,7 @@ class LinearClassifier(object):
         #  The output shape should be (n_classes, C, H, W).
 
         # ====== YOUR CODE: ======
-        weight = self.weights
-        if has_bias is True:
-            weight = self.weights[..., 1:, :]
-        w_images = weight.reshape(self.n_classes, *img_shape)
+        w_images =  self.weights[1:].T.reshape(-1, *img_shape)
         # ========================
 
         return w_images
@@ -169,9 +166,9 @@ def hyperparams():
     #  Manually tune the hyperparameters to get the training accuracy test
     #  to pass.
     # ====== YOUR CODE: ======
-    hp['weight_std'] = 0.05
-    hp['learn_rate'] = 0.5
-    hp['weight_decay'] = 0.001
+    hp['weight_std'] = 0.001
+    hp['learn_rate'] = 0.1
+    hp['weight_decay'] = 0.01
     # ========================
 
     return hp
