@@ -109,7 +109,7 @@ class LinearClassifier(object):
             for x, y in dl_train :
                 y_p ,x_scores = self.predict(x)
                 loss = loss_fn(x, y, x_scores, y_p)
-                grad = loss_fn.grad() + weight_decay * self.weights; 
+                grad = loss_fn.grad() + weight_decay * self.weights 
                 self.weights = self.weights - (learn_rate * grad / (epoch_idx + 1))
                 accumelated_accuracy += self.evaluate_accuracy(y,y_p)
                 

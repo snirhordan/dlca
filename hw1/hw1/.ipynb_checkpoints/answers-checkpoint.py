@@ -123,7 +123,7 @@ part3_q1 = r"""
     The value is chosen in an arbitrary way for the SVM loss  𝐿(𝑾) because The hyperparameters Δ and λ seem like two different hyperparameters,
     but in fact they both control the same tradeoff: The tradeoff between the data loss and the regularization loss in the objective.
     The key to understanding this is that the magnitude of the weights W has direct effect on the scores (and hence also their differences):
-    As we shrink all values inside W the score differences will become lower, and as we scale up the weights the score differences will all become     higher.
+    As we shrink all values inside W the score differences will become lower, and as we scale up the weights the score differences will all become higher.
     
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -141,8 +141,9 @@ part3_q2 = r"""
     1.The linear model produces an avarage representation per class , when the model sees a familiar image, it classifies it 
      according to the most similar representation.
      Essentially the classifier learns which areas of the image is most likely to be "activated" for each digit. In the weight images this can be seen as particular regions of the canvas having more weight than others.
-     For example, the digit zero has weights of high magnitude spread out over the canvas, in contrast with the weights of the digit 3, which schematically appear to be horizontal strips on the canvas. The shaoe 0 is sevenly spread out whilst 3 is concentrated around the horizontl strips on the canvas.
-     As a result of this we noticed some falsely classified images.
+     For example, the digit zero has weights of high magnitude spread out over a circular shape, in contrast with the weights of the digit 3, which schematically have lower valued weughts where one would close it to make a circle. That differentiates the digit 3 from 0.
+     Errors occur when an input digit is in a shape which resembles two distinct weight matrices. For example in the first row of printouts, the digit 5 is drawn with the bottom alf enclosed in a circle. In the weight activation for the digit 5, there is low weights for the region where the bottom half of 5 encloses into a ball, whereas the weight matrix for the digit 6 has high weights, for an enclosed loop. This is why the resulting value of the weight matrix that corresponds to 6 with the image had a higher value than the multiplication of the weight matrix corresponding to the digit 5 with the input image. 
+     As a result of the above issue, we noticed some falsely classified images.
 
     2. K-nn is a naive algorithm, it classifies the sample according to its K nearest neighbours in its dataset.
        The linear model learns features over the entire dataset and given a new instance classifies it according to which regions it is mostly written in and which digit is most likely to be written in those regions based on the entire training dataset.
@@ -192,10 +193,11 @@ part4_q1 = r"""
     The ideal pattern to see in the residual plot consists of points located exactly on the line.
     We should get minimal difference (distance) between the predictions and the labels.
     In our model we got dense points around the horizontal axis, which indicates a good fitting for the model.
-    The ideal pattern to see in the residual plot is points on the axis horizontal axis.
-    We got a final plot after CV which is much better than the one with the top 5 features, the distances between the 
+    
+    We got a final plot after CV which is much better than the one with the top 5 features, the average distances between the 
     samples and the lines are smaller, which means better performance in terms of calssification.
     
+    Additionally the outliers classified by the final model after CV have much lower distance from the horizontal line than then the outliers from the model relying on just the top 5 features. Outliers is an ambiguous term but we can approximately define them as those that have a difference of more then 15 from the horizontal line. 
 
 Write your answer using **markdown** and $\LaTeX$:
 ```python
