@@ -82,7 +82,8 @@ class LeakyReLU(Layer):
 
         # TODO: Implement the LeakyReLU operation.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = x #not needed?
+        out.apply_(lambda x: torch.max( torch.tensor( [x*(self.alpha), x] ) ) )
         # ========================
 
         self.grad_cache["x"] = x
@@ -97,7 +98,8 @@ class LeakyReLU(Layer):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        # 0/1 matrix of whether value is negative/positive
+        # calculate subgradients accordingly - apply function maybe
         # ========================
 
         return dx
