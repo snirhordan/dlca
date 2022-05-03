@@ -143,9 +143,7 @@ class Sigmoid(Layer):
         # TODO: Implement the Sigmoid function.
         #  Save whatever you need into grad_cache.
         # ====== YOUR CODE: ======
-        x = torch.exp(-x)
-        x = x + 1
-        out = 1/x
+        out = 1/(torch.exp(-x) + 1)
         # ========================
         self.grad_cache["x"] = x
         return out
@@ -159,8 +157,8 @@ class Sigmoid(Layer):
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
         x = self.grad_cache["x"]
-        
-        torch.exp()
+        x = ( 1/(torch.exp(-x) + 1)) * (1 - (1/(torch.exp(-x) + 1)))
+        dx = torch.mul(dout, x)
         # ========================
 
         return dx
@@ -188,9 +186,9 @@ class TanH(Layer):
         # TODO: Implement the tanh function.
         #  Save whatever you need into grad_cache.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = (torch.exp(x) - torch.exp(-x)) / (torch.exp(x) + torch.exp(-x))
         # ========================
-
+        self.grad_cache["x"] = x
         return out
 
     def backward(self, dout):
@@ -201,7 +199,10 @@ class TanH(Layer):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = self.grad_cache["x"]
+        
+        x = 1- ( (torch.exp(x) - torch.exp(-x)) / (torch.exp(x) + torch.exp(-x)) )**2
+        dx = torch.mul(x, dout)
         # ========================
 
         return dx
