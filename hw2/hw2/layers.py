@@ -82,12 +82,11 @@ class LeakyReLU(Layer):
 
         # TODO: Implement the LeakyReLU operation.
         # ====== YOUR CODE: ======
-        out = x #not needed?
-        out.apply_(lambda x: torch.max( torch.tensor( [x*(self.alpha), x] ) ) )
+        x = torch.where( x > 0 , x, x*self.alpha )
         # ========================
 
         self.grad_cache["x"] = x
-        return out
+        return x
 
     def backward(self, dout):
         """
@@ -98,8 +97,8 @@ class LeakyReLU(Layer):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        # 0/1 matrix of whether value is negative/positive
-        # calculate subgradients accordingly - apply function maybe
+        x = torch.where( x > 0, 1.0, self.alpha )
+        dx = torch.mul(dout, x)
         # ========================
 
         return dx
@@ -118,7 +117,7 @@ class ReLU(LeakyReLU):
 
     def __init__(self):
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        super().__init__(0.)
         # ========================
 
     def __repr__(self):
@@ -144,9 +143,11 @@ class Sigmoid(Layer):
         # TODO: Implement the Sigmoid function.
         #  Save whatever you need into grad_cache.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = torch.exp(-x)
+        x = x + 1
+        out = 1/x
         # ========================
-
+        self.grad_cache["x"] = x
         return out
 
     def backward(self, dout):
@@ -157,7 +158,9 @@ class Sigmoid(Layer):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = self.grad_cache["x"]
+        
+        torch.exp()
         # ========================
 
         return dx
