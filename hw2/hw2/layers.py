@@ -272,7 +272,7 @@ class Linear(Layer):
         # ====== YOUR CODE: ======
         dx = torch.matmul( dout, self.w )
         self.dw += torch.matmul( torch.t(dout), x )
-        self.db += torch.matmul( dout, self.ones_like(dout) )
+        self.db += torch.matmul( torch.t(dout), torch.ones(dout.size(dim=0)) )
         # ========================
 
         return dx
