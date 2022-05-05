@@ -230,7 +230,8 @@ class Linear(Layer):
         # Initialize the weights to zero-mean gaussian noise with a standard
         # deviation of `wstd`. Init bias to zero.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.w = torch.randn(out_features, in_features)*wstd #self.in_features?
+        self.b = torch.zeros(out_features)
         # ========================
 
         # These will store the gradients
@@ -250,7 +251,7 @@ class Linear(Layer):
 
         # TODO: Compute the affine transform
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = torch.matmul(x, torch.t(self.w)) + self.b
         # ========================
 
         self.grad_cache["x"] = x
@@ -269,7 +270,9 @@ class Linear(Layer):
         #   - db, the gradient of the loss with respect to b
         #  Note: You should ACCUMULATE gradients in dw and db.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        dx = torch.matmul( dout, self.w )
+        self.dw += torch.matmul( torch.t(dout), x )
+        self.db += torch.matmul( dout, self.ones_like(dout) )
         # ========================
 
         return dx
