@@ -313,7 +313,16 @@ class CrossEntropyLoss(Layer):
         # TODO: Compute the cross entropy loss using the last formula from the
         #  notebook (i.e. directly using the class scores).
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        exp = torch.exp( x )
+        sums, _ = torch.sum(exp, dim=1, keepdim=True) #sum of exponents
+        exp = torch.div( exp, sums )
+        log = torch.log( exp )
+        one_hot = torch.zeros(N, x.size(dim=1))#one hot encode (N, D) template
+        for i, j in enumerate(y):
+            one_hot[i, j] = 1
+        m = torch.mul(one_hot, log)
+        loss = torch.sum(m, 1) #vector (N,)
+        loss = torch.sum(loss)
         # ========================
 
         self.grad_cache["x"] = x
