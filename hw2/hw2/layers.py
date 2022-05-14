@@ -314,19 +314,19 @@ class CrossEntropyLoss(Layer):
         #  notebook (i.e. directly using the class scores).
         # ====== YOUR CODE: ======
         exp = torch.exp( x )
-        sums, _ = torch.sum(exp, dim=1, keepdim=True) #sum of exponents
+        sums = torch.sum(exp, dim=1, keepdim=True) #sum of exponents
         exp = torch.div( exp, sums )
-        log = torch.log( exp )
+        log = -torch.log( exp )
         one_hot = torch.zeros(N, x.size(dim=1))#one hot encode (N, D) template
         for i, j in enumerate(y):
             one_hot[i, j] = 1
-        m = torch.mul(one_hot, log)
-        loss = torch.sum(m, 1) #vector (N,)
-        loss = torch.sum(loss)
+        result = torch.matmul(one_hot, torch.transpose(log,0,1))
+        result = torch.diagonal(result)
+        loss = torch.sum(result) / len(result)
         # ========================
 
         self.grad_cache["x"] = x
-        self.grad_cache["y"] = y
+        self.grad_cache["y"] = one_hot
         return loss
 
     def backward(self, dout=1.0):
@@ -341,9 +341,12 @@ class CrossEntropyLoss(Layer):
 
         # TODO: Calculate the gradient w.r.t. the input x.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        exp = torch.exp( x )
+        sums = torch.sum(exp, dim=1, keepdim=True) #sum of exponents
+        exp = torch.div( exp, sums )
+        dx = exp - y
+        dx = torch.mul(dx , dout)
         # ========================
-
         return dx
 
     def params(self):
