@@ -326,7 +326,7 @@ class CrossEntropyLoss(Layer):
         # ========================
 
         self.grad_cache["x"] = x
-        self.grad_cache["y"] = one_hot
+        self.grad_cache["y"] = y
         return loss
 
     def backward(self, dout=1.0):
@@ -341,10 +341,13 @@ class CrossEntropyLoss(Layer):
 
         # TODO: Calculate the gradient w.r.t. the input x.
         # ====== YOUR CODE: ======
+        one_hot = torch.zeros(N, x.size(dim=1))#one hot encode (N, D) template
+        for i, j in enumerate(y):
+            one_hot[i, j] = 1
         exp = torch.exp( x )
         sums = torch.sum(exp, dim=1, keepdim=True) #sum of exponents
         exp = torch.div( exp, sums )
-        dx = exp - y
+        dx = torch.subtract(exp, one_hot )
         dx = torch.mul(dx , dout)
         # ========================
         return dx
@@ -398,24 +401,26 @@ class Sequential(Layer):
         self.layers = layers
 
     def forward(self, x, **kw):
-        out = None
+        out = x
 
         # TODO: Implement the forward pass by passing each layer's output
         #  as the input of the next.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for layer in self.layers:
+            out = layer(out) 
         # ========================
 
         return out
 
     def backward(self, dout):
-        din = None
+        din = dout
 
         # TODO: Implement the backward pass.
         #  Each layer's input gradient should be the previous layer's output
         #  gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for layer in reversed(self.layers):
+            din = layer.backward(din)
         # ========================
 
         return din
@@ -425,7 +430,8 @@ class Sequential(Layer):
 
         # TODO: Return the parameter tuples from all layers.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for layer in self.layers:
+            params.extend(layer.params())
         # ========================
 
         return params

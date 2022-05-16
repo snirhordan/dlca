@@ -9,28 +9,22 @@ math (delimited with $$).
 # Part 1 (Backprop) answers
 
 part1_q1 = r"""
-**Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+**Your answer:**<br />
+**a. Output of layer is x*W^T+b. Shape of partial derivative is shape of W^t which is 512x1024** <br />
+**b. W is sparse if it's initialized using a normal distribution with low std dev**<br />
+**c. This is a linear transformation thus Jacobian of transformation w.r.t X is W^T. No need to explicitly calculate it.**<br />
+Same process for derivative by W:<br />
+**a. Shape of parital derivative of transformation w.r.t W is the shape of X which is 64x512**<br />
+**b. X is sparse depending on the input. Not necessary for the model to learn efficiently, as opposed to W**
+**c. The derivative w.r.t to W is X itself, as seen in implementatoin of linear layer, and therefore no need to calculate Jacobian explicitly.**
 """
 
 part1_q2 = r"""
 **Your answer:**
 
+Backpropegation is not the only method of training neural networks. It is the most commonly used because in most classification tasks the output is a scalar and thus the gradients can be explicitly and  efficiently calculated.
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+In all models there must be some objective function that is minimized, not necessarily through backpropegation.
 
 """
 
