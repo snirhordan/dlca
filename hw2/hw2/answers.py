@@ -56,7 +56,9 @@ def part2_optim_hp():
     # TODO: Tweak the hyperparameters to get the best results you can.
     # You may want to use different learning rates for each optimizer.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    wstd = 0.05
+    lr_vanilla = 
+    reg = 
     # ========================
     return dict(
         wstd=wstd,

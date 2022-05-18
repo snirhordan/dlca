@@ -84,15 +84,17 @@ class Trainer(abc.ABC):
             #  - Save losses and accuracies in the lists above.
             # ====== YOUR CODE: ======
             actual_num_epochs += 1
-            te = train_epoch(dl_train, **kw)
+            te = train_epoch(dl_train, verbose=verbose, **kw)
             
             train_loss.append(te.losses)
             train_acc.append([te.accuracy])
 
-            test_e = test_epoch(dl_test, **kw)
+            test_e = test_epoch(dl_test, verbose=verbos, **kw)
             
             test_loss.append(test_e.losses)
             test_acc.append([test_e.accuracy])
+            
+            best_acc = test_e.accuracy if test_e.accuracy < best_acc else best_acc
             # ========================
 
             # TODO:
@@ -103,11 +105,13 @@ class Trainer(abc.ABC):
             #    the checkpoints argument.
             if best_acc is None or test_result.accuracy > best_acc:
                 # ====== YOUR CODE: ======
-                raise NotImplementedError()
+                epochs_without_improvement += 1
+                if early_stopping is not None and epochs_without_improvement >= early_stopping:
+                    break
                 # ========================
             else:
                 # ====== YOUR CODE: ======
-                raise NotImplementedError()
+                save_checkpoint(checkpoints)
                 # ========================
 
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
@@ -312,7 +316,7 @@ class LayerTrainer(Trainer):
         # ====== YOUR CODE: ======
         self.optimizer.zero_grad()
         out = self.model(X)
-        loss = self.loss_fn(out, y)
+        loss = self.loss_fn(out, y).item()
         dout = self.loss_fn.backward()
         self.model.backward(dout)
         self.optimizer.step()
@@ -331,7 +335,7 @@ class LayerTrainer(Trainer):
         # TODO: Evaluate the Layer model on one batch of data.
         # ====== YOUR CODE: ======
         out = self.model(X)
-        loss = self.loss_fn(out, y)
+        loss = self.loss_fn(out, y).item()
         output = torch.argmax( out, dim=1 )
         num_correct = int(sum([1 for idx in range(len(out)) if output[idx] != y[idx]]))
         # ========================
