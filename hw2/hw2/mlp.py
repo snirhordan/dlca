@@ -55,7 +55,7 @@ class MLP(nn.Module):
         #  - Either instantiate the activations based on their name or use the provided
         #    instances.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.layers = 
         # ========================
 
     def forward(self, x: Tensor) -> Tensor:

@@ -348,7 +348,8 @@ class CrossEntropyLoss(Layer):
         sums = torch.sum(exp, dim=1, keepdim=True) #sum of exponents
         exp = torch.div( exp, sums )
         dx = torch.subtract( exp, one_hot )
-        dx = torch.mul( dx , dout ) 
+        dx = torch.mul( dx , dout )
+        dx = torch.div( dx, N )
         # ========================
 
         return dx
@@ -408,7 +409,7 @@ class Sequential(Layer):
         #  as the input of the next.
         # ====== YOUR CODE: ======
         for layer in self.layers:
-            out = layer(out) 
+            out = layer(out, **kw) 
         # ========================
 
         return out
@@ -490,16 +491,23 @@ class MLP(Layer):
 
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        layers.extend( Linear(in_features, hidden_features[0]) )
+        
+        length = len(hidden_features)
         if (activation == 'relu'):
-            for idx, num in enumerate(hidden_features):
-                if num < len(hidden_features)-1:
-                    layers.extend([Linear(num, hidden_features[idx+1]),  Relu()])
+            layers.append( Linear(in_features, hidden_features[0]) )
+            layers.append( ReLU() )
+            for idx in range(length-1):
+                layers.append( Linear(hidden_features[idx], hidden_features[idx+1]) )
+                layers.append( ReLU() )
+    
         elif (activation == 'sigmoid'):
-            for idx, num in enumerate(hidden_features):
-                if num < len(hidden_features)-1:
-                    layers.extend([Linear(num, hidden_features[idx+1]),  Sigmoid()])
-        layers.extend( Linear(hidden_features[len(hidden_features)-1], out_features) )
+            layers.append( Linear(in_features, hidden_features[0]) )
+            layers.append( Sigmoid() )
+            for idx in range(length-1):
+                layers.append( Linear(hidden_features[idx], hidden_features[idx+1]) )
+                layers.append( Sigmoid() )
+    
+        layers.append(Linear( hidden_features[length-1], num_classes))
         # ========================
 
         self.sequence = Sequential(*layers)

@@ -83,7 +83,16 @@ class Trainer(abc.ABC):
             #  - Use the train/test_epoch methods.
             #  - Save losses and accuracies in the lists above.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            actual_num_epochs += 1
+            te = train_epoch(dl_train, **kw)
+            
+            train_loss.append(te.losses)
+            train_acc.append([te.accuracy])
+
+            test_e = test_epoch(dl_test, **kw)
+            
+            test_loss.append(test_e.losses)
+            test_acc.append([test_e.accuracy])
             # ========================
 
             # TODO:
@@ -130,7 +139,7 @@ class Trainer(abc.ABC):
         :return: An EpochResult for the epoch.
         """
         self.model.train(False)  # set evaluation (test) mode
-        return self._foreach_batch(dl_test, self.test_batch, **kw)
+        return self._foreach_batch(dl_test,  self.test_batch, **kw)
 
     @abc.abstractmethod
     def train_batch(self, batch) -> BatchResult:
@@ -286,12 +295,14 @@ class ClassifierTrainer(Trainer):
 class LayerTrainer(Trainer):
     def __init__(self, model, loss_fn, optimizer):
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        super().__init__(model)
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
         # ========================
 
     def train_batch(self, batch) -> BatchResult:
         X, y = batch
-
+        X = torch.reshape(X, (X.size(dim=0),-1,))
         # TODO: Train the Layer model on one batch of data.
         #  - Forward pass
         #  - Backward pass
@@ -299,17 +310,30 @@ class LayerTrainer(Trainer):
         #  - Calculate number of correct predictions (make sure it's an int,
         #    not a tensor) as num_correct.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.optimizer.zero_grad()
+        out = self.model(X)
+        loss = self.loss_fn(out, y)
+        dout = self.loss_fn.backward()
+        self.model.backward(dout)
+        self.optimizer.step()
+        
+        #calculate num correct
+        output = torch.argmax( out, dim=1 )
+        num_correct = int(sum([1 for idx in range(len(out)) if output[idx] != y[idx]]))
         # ========================
 
         return BatchResult(loss, num_correct)
 
     def test_batch(self, batch) -> BatchResult:
         X, y = batch
+        X = torch.reshape(X, (X.size(dim=0),-1,))
 
         # TODO: Evaluate the Layer model on one batch of data.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = self.model(X)
+        loss = self.loss_fn(out, y)
+        output = torch.argmax( out, dim=1 )
+        num_correct = int(sum([1 for idx in range(len(out)) if output[idx] != y[idx]]))
         # ========================
 
         return BatchResult(loss, num_correct)
