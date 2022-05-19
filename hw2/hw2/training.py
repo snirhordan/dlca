@@ -84,17 +84,19 @@ class Trainer(abc.ABC):
             #  - Save losses and accuracies in the lists above.
             # ====== YOUR CODE: ======
             actual_num_epochs += 1
-            te = train_epoch(dl_train, verbose=verbose, **kw)
+            te = self.train_epoch(dl_train, verbose=verbose, **kw)
             
             train_loss.append(te.losses)
             train_acc.append([te.accuracy])
 
-            test_e = test_epoch(dl_test, verbose=verbos, **kw)
+            test_e = self.test_epoch(dl_test, verbose=verbose, **kw)
             
             test_loss.append(test_e.losses)
             test_acc.append([test_e.accuracy])
-            
-            best_acc = test_e.accuracy if test_e.accuracy < best_acc else best_acc
+            if best_acc is not None:
+                best_acc = test_e.accuracy if test_e.accuracy > best_acc else best_acc
+            elif best_acc is None:
+                best_acc = test_e.accuracy
             # ========================
 
             # TODO:
@@ -103,15 +105,17 @@ class Trainer(abc.ABC):
             #  - Optional: Implement checkpoints. You can use the save_checkpoint
             #    method on this class to save the model to the file specified by
             #    the checkpoints argument.
-            if best_acc is None or test_result.accuracy > best_acc:
+            
+            if best_acc is None or test_e.accuracy > best_acc:
                 # ====== YOUR CODE: ======
-                epochs_without_improvement += 1
-                if early_stopping is not None and epochs_without_improvement >= early_stopping:
-                    break
+                epochs_without_improvement = 0
+                save_checkpoint(checkpoints)
                 # ========================
             else:
                 # ====== YOUR CODE: ======
-                save_checkpoint(checkpoints)
+                if early_stopping is not None and epochs_without_improvement >= early_stopping:
+                    break
+                epochs_without_improvement += 1
                 # ========================
 
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)

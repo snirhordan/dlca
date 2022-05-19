@@ -92,19 +92,25 @@ class MomentumSGD(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.update = [ torch.zeros(dp.size()) for p, dp in self.params if dp is not None ]
+        self.idx = 0
         # ========================
 
     def step(self):
         for p, dp in self.params:
             if dp is None:
                 continue
-
+            
             # TODO: Implement the optimizer step.
             # update the parameters tensor based on the velocity. Don't forget
             # to include the regularization term.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            self.update[self.idx] = self.momentum * self.update[self.idx] - self.learn_rate * dp
+            p += self.update[self.idx]
+            dp += self.reg * dp
+            self.idx += 1
+            if self.idx == len(self.update):
+                self.idx = 0
             # ========================
 
 
@@ -125,7 +131,8 @@ class RMSProp(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.prev = [ torch.zeros(dp.size()) for p, dp in self.params if dp is not None ]
+        self.idx = 0        
         # ========================
 
     def step(self):
@@ -138,5 +145,16 @@ class RMSProp(Optimizer):
             # average of it's previous gradients. Use it to update the
             # parameters tensor.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            self.prev[idx] = self.decay * self.prev[idx] + (1-self.decay) * torch.square(dp)
+            temp = self.prev[idx].add_( self.eps )
+            temp = temp.pow_(-1)
+            temp = torch.sqrt( temp )
+            temp = torch.mul( temp, self.learn_rate )
+            temp = torch.mul( temp, dp )
+            
+            p = torch.sub( p, temp )#includes learn rate
+            
+            self.idx += 1
+            if self.idx == len(self.prev):
+                self.idx = 0
             # ========================
