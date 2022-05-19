@@ -145,15 +145,16 @@ class RMSProp(Optimizer):
             # average of it's previous gradients. Use it to update the
             # parameters tensor.
             # ====== YOUR CODE: ======
-            self.prev[idx] = self.decay * self.prev[idx] + (1-self.decay) * torch.square(dp)
-            temp = self.prev[idx].add_( self.eps )
+            dp += self.reg * p
+
+            self.prev[self.idx] = self.decay * self.prev[self.idx] + (1-self.decay) * torch.square(dp)
+            temp = self.prev[self.idx].add_( self.eps )
             temp = temp.pow_(-1)
             temp = torch.sqrt( temp )
             temp = torch.mul( temp, self.learn_rate )
             temp = torch.mul( temp, dp )
             
             p = torch.sub( p, temp )#includes learn rate
-            
             self.idx += 1
             if self.idx == len(self.prev):
                 self.idx = 0
