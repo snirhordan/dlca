@@ -55,7 +55,26 @@ class MLP(nn.Module):
         #  - Either instantiate the activations based on their name or use the provided
         #    instances.
         # ====== YOUR CODE: ======
-        self.layers = 
+        super().__init__()
+        
+        
+        self.dims = dims
+        activators = []
+        for activate in nonlins:
+            if  activate not in ACTIVATIONS:
+                activators += [activate]
+            else:
+                if activate == 'softmax' or activate == 'logsoftmax' :
+                    activators += [ACTIVATIONS[activate](dim=1)]  
+                else:
+                    activators += [ACTIVATIONS[activate]()]  
+            
+        layers = []
+        
+        for i,in_dim, out_dim in zip( range(0,len(nonlins)),[self.in_dim] + dims[:], dims[:]):
+            currentLayer = [nn.Linear(in_dim, out_dim),activators[i]]
+            layers += currentLayer
+        self.layer =  nn.Sequential(*layers)
         # ========================
 
     def forward(self, x: Tensor) -> Tensor:
@@ -66,5 +85,6 @@ class MLP(nn.Module):
         # TODO: Implement the model's forward pass. Make sure the input and output
         #  shapes are as expected.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = torch.reshape(x,(x.shape[0],self.in_dim))
+        return self.layer(x)
         # ========================
