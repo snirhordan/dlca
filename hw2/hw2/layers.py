@@ -320,7 +320,7 @@ class CrossEntropyLoss(Layer):
         one_hot = torch.zeros(N, x.size(dim=1))#one hot encode (N, D) template
         for i, j in enumerate(y):
             one_hot[i, j] = 1
-        result = torch.matmul(one_hot, torch.transpose(log,0,1))
+        result = torch.matmul(one_hot, torch.transpose(log, 0, 1))
         result = torch.diagonal(result)
         loss = torch.sum(result) / len(result)
         # ========================
@@ -345,7 +345,7 @@ class CrossEntropyLoss(Layer):
         for i, j in enumerate(y):
             one_hot[i, j] = 1
         exp = torch.exp( x )
-        sums = torch.sum(exp, dim=1, keepdim=True) #sum of exponents
+        sums = torch.sum( exp, dim=1, keepdim=True ) #sum of exponents
         exp = torch.div( exp, sums )
         dx = torch.subtract( exp, one_hot )
         dx = torch.mul( dx , dout )
@@ -373,15 +373,27 @@ class Dropout(Layer):
         #  Notice that contrary to previous layers, this layer behaves
         #  differently a according to the current training_mode (train/test).
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        if self.training_mode is True:
+            prob = torch.full( x.size(), self.p )
+            bern = torch.bernoulli( prob )
+            self.grad_cache["bern"] = bern
+            out = torch.mul( x, bern )
+        elif self.training_mode is False:
+            out = torch.mul( x, 1-self.p )
         # ========================
-
+        
+        
         return out
 
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        bern = self.grad_cache["bern"]
+        if self.training_mode is True:
+            dx = torch.mul(dout, bern) 
+            
+        elif self.training_mode is False:
+            dx = torch.mul( dout, 1-self.p )
         # ========================
 
         return dx
@@ -496,9 +508,13 @@ class MLP(Layer):
         if (activation == 'relu'):
             layers.append( Linear(in_features, hidden_features[0]) )
             layers.append( ReLU() )
+            if dropout > 0 :
+                layers.append( Dropout( dropout  ) ) 
             for idx in range(length-1):
                 layers.append( Linear(hidden_features[idx], hidden_features[idx+1]) )
                 layers.append( ReLU() )
+                if dropout > 0 :
+                    layers.append( Dropout( dropout  ) ) 
     
         elif (activation == 'sigmoid'):
             layers.append( Linear(in_features, hidden_features[0]) )

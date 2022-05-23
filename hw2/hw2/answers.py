@@ -79,7 +79,8 @@ def part2_dropout_hp():
     # TODO: Tweak the hyperparameters to get the model to overfit without
     # dropout.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    wstd = 0.05 
+    lr = 1
     # ========================
     return dict(wstd=wstd, lr=lr)
 
@@ -113,7 +114,9 @@ An equation: $e^{i\pi} -1 = 0$
 part2_q3 = r"""
 **Your answer:**
 
-
+**a. Backpropegation is a method for training neural networks in which, using the chain rule, we are able to calculate the derivative of the loss function with respect to any of our parametrs ( weights, biases and such ).
+Gradient descent is a general method of finding a local minimum of a function by taking "steps" along the direction of the gradient. From calculus we know the gradient points to the direction of steepest ascent, thereby negating the gradient goes in the direction of steepest descent. There is an implied assumption when training neural networks that if we update the parameters in the the direction of steepest descent of the value of the loss function w.r.t the parameters of the neural network we will reach a local, or as happens in practice usually, a global minimum of the loss function. 
+**
 Write your answer using **markdown** and $\LaTeX$:
 ```python
 # A code block
