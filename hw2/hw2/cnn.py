@@ -311,22 +311,42 @@ class ResNet(CNN):
         #  - Use bottleneck blocks if requested and if the number of input and output
         #    channels match for each group of P convolutions.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        aggregated_channels = [in_channels] + self.channels
+        pools_num = len(self.channels) // self.pool_every
+        for i in range (pools_num):
+            if aggregated_channels[i*self.pool_every] != aggregated_channels[self.pool_every*(i+1)] or self.bottleneck == False: 
+                layers += [ResidualBlock(aggregated_channels[i * self.pool_every], aggregated_channels[i * self.pool_every + 1: (i + 1) * self.pool_every + 1], kernel_sizes=[3] * self.pool_every, batchnorm=self.batchnorm, dropout=self.dropout, activation_type=self.activation_type, activation_params=self.activation_params)]
+            else:
+                in_out_channels = int(aggregated_channels[i * self.pool_every])
+                inner_channels= aggregated_channels[i * self.pool_every+2: (i+1)*self.pool_every]
+                layers += [ResidualBottleneckBlock(in_out_channels=in_out_channels, inner_channels=inner_channels, inner_kernel_sizes = [3] * (self.pool_every-2),batchnorm=self.batchnorm,  dropout=self.dropout, activation_type=self.activation_type, activation_params=self.activation_params)]     
+            layers += [POOLINGS[self.pooling_type](**self.pooling_params)]
+        remain = len(self.channels) % self.pool_every
+        if remain > 0:
+            if aggregated_channels[-remain - 1] != aggregated_channels[-1] or self.bottleneck == False:
+                layers += [ResidualBlock(aggregated_channels[-remain - 1], aggregated_channels[-remain:],kernel_sizes=[3] * remain, batchnorm=self.batchnorm, dropout=self.dropout, activation_type=self.activation_type,activation_params=self.activation_params)]
+            else:
+                in_out_channels = int(aggregated_channels[-remain - 1])
+                inner_channels= aggregated_channels[-remain:-1]
+                layers += [ResidualBottleneckBlock(in_out_channels=in_out_channels, inner_channels=inner_channels,inner_kernel_sizes = [3] * (p-2), batchnorm=self.batchnorm, dropout=self.dropout, activation_type=self.activation_type, activation_params=self.activation_params)]
+        self.conv_out_w = in_w // (self.pooling_params["kernel_size"] ** pools_num)
+        self.conv_out_h = in_h // (self.pooling_params["kernel_size"] ** pools_num)
         # ========================
         seq = nn.Sequential(*layers)
         return seq
 
 
 class YourCNN(CNN):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, in_size, out_classes, channels, pool_every, hidden_dims, batchnorm=True, activation_type='lrelu', activation_params=dict(negative_slope=0.01),pooling_type='max', pooling_params=dict(kernel_size=2), dropout=0.1, **kwargs):
         """
         See CNN.__init__
         """
-        super().__init__(*args, **kwargs)
-
+        
         # TODO: Add any additional initialization as needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        super().__init__(in_size, out_classes, channels, pool_every, hidden_dims, activation_type=activation_type, activation_params=activation_params, pooling_type=pooling_type, pooling_params=pooling_params)
+        self.dropout = dropout
+        self.batchnorm = batchnorm
         # ========================
 
     # TODO: Change whatever you want about the CNN to try to
@@ -334,6 +354,19 @@ class YourCNN(CNN):
     #  For example, add batchnorm, dropout, skip connections, change conv
     #  filter sizes etc.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
-
+    def _make_feature_extractor(self):
+        layers = []
+        in_channels, in_h, in_w, = tuple(self.in_size)
+        all_channels = [in_channels] + self.channels
+        pools_num = len(self.channels) // self.pool_every
+        for i in range (pools_num):
+            layers += [ResidualBlock(all_channels[i * self.pool_every], all_channels[i * self.pool_every + 1: (i + 1) * self.pool_every + 1],kernel_sizes=[3] * self.pool_every, batchnorm=self.batchnorm, dropout=self.dropout, activation_type=self.activation_type, activation_params=self.activation_params)]
+            layers += [POOLINGS[self.pooling_type](**self.pooling_params)]
+        remain = len(self.channels) % self.pool_every
+        if remain > 0: 
+            layers += [ResidualBlock(all_channels[-remain - 1], all_channels[-remain:],kernel_sizes=[3] * remain, batchnorm=self.batchnorm, dropout=self.dropout, activation_type=self.activation_type, activation_params=self.activation_params)]
+        self.conv_out_w = in_w // (self.pooling_params["kernel_size"] ** pools_num)
+        self.conv_out_h = in_h // (self.pooling_params["kernel_size"] ** pools_num)    
+        sequential = nn.Sequential(*layers)
+        return sequential
     # ========================
