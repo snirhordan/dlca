@@ -101,13 +101,14 @@ An equation: $e^{i\pi} -1 = 0$
 part2_q2 = r"""
 **Your answer:**
 
+** It is possible for both the cros entropy loss and the accuracy to simultanously increase during the testing phase.
+Accuracy is the ratio of samples in the batch that are classified correcctly by taking the maximum argument in the probability vector inducd by cross entropy.
+The loss is given by the equation $-y^t log(\hat{y}) $ which we have seen is equivalent to $ -x_i + log( e^{x_1} + ... e^{x_n}) $ where i is the correct output label. 
+The scenario in which the loss AND accuracy can both increase is if the entropy increases whilst the correct label retains the maximum probability.
+Concretely, COMPLETE!
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+Threfore for the first few epochs the classifier might get higher accuracy but the cross entropy loss  will increase, thereby yielding an increased loss. This issue in theory should be "fixed"  after a few batches when the crossentropy of what the model predicts and the true distribution decreases.
+**
 
 """
 
@@ -116,6 +117,11 @@ part2_q3 = r"""
 
 **a. Backpropegation is a method for training neural networks in which, using the chain rule, we are able to calculate the derivative of the loss function with respect to any of our parametrs ( weights, biases and such ).
 Gradient descent is a general method of finding a local minimum of a function by taking "steps" along the direction of the gradient. From calculus we know the gradient points to the direction of steepest ascent, thereby negating the gradient goes in the direction of steepest descent. There is an implied assumption when training neural networks that if we update the parameters in the the direction of steepest descent of the value of the loss function w.r.t the parameters of the neural network we will reach a local, or as happens in practice usually, a global minimum of the loss function. 
+**
+
+**
+b. Gradient decent is a 
+
 **
 Write your answer using **markdown** and $\LaTeX$:
 ```python
