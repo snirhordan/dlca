@@ -22,7 +22,7 @@ class Classifier(nn.Module, ABC):
 
         # TODO: Add any additional initializations here, if you need them.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        ## No need for extra code
         # ========================
 
     def forward(self, x: Tensor) -> Tensor:
