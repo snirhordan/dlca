@@ -103,9 +103,21 @@ part2_q2 = r"""
 
 ** It is possible for both the cros entropy loss and the accuracy to simultanously increase during the testing phase.
 Accuracy is the ratio of samples in the batch that are classified correcctly by taking the maximum argument in the probability vector inducd by cross entropy.
-The loss is given by the equation $-y^t log(\hat{y}) $ which we have seen is equivalent to $ -x_i + log( e^{x_1} + ... e^{x_n}) $ where i is the correct output label. 
+The loss is given by the equation $-y^t log(\hat{y}) $ which we have seen is equivalent to $ -x_i + log( e^{x_1} + ... +e^{x_n}) $ where i is the correct output label. 
 The scenario in which the loss AND accuracy can both increase is if the entropy increases whilst the correct label retains the maximum probability.
-Concretely, COMPLETE!
+Concretely, assume we have a mini vatch of two samples, although thhe cross entropy loss decreases in one it might increase more in the other thus the average cross entropy loss will increase, even though the classsification losss increases.
+
+Take for example , in binary classification, in first epoch we get softmax activations : 
+1. [0.1, 0.9]  , 2. [0.49 ,0.51 ] with correct labels 1. [0,1] 2. [1,0]
+In second epoch we get : 
+1. [ 0.4, 0.6 ] , 2. [0.51, 0.49] with correct labels 1.[0,1] 2. [1,0]
+
+Accuracy of first mini-batch is 50% and for the second is 100%, so increased.
+
+Loss of first mini-batch is $ [-0.9 + log(e^{0.1} + e^{0.9}) -0.49 + log( e^{0.49} + e^{0.51} ) ]/2 = 0.5371 $ 
+loss of second mini-batch is $  [-0.6 + log(e^{0.4}+e^{0.6}) -0.51 + log( e^{0.49} + e^{0.51} ) ]/2 =0.64 $
+
+Therefore both loss and accuracy increase.
 
 Threfore for the first few epochs the classifier might get higher accuracy but the cross entropy loss  will increase, thereby yielding an increased loss. This issue in theory should be "fixed"  after a few batches when the crossentropy of what the model predicts and the true distribution decreases.
 **
