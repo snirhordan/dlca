@@ -88,7 +88,7 @@ class CNN(nn.Module):
         activation_function = ACTIVATIONS[self.activation_type](**self.activation_params)
         for in_channel,out_channel in channelsIT :
             layers += [nn.Conv2d(in_channel, out_channel, **self.conv_params)]
-            layers += [activationFunction]
+            layers += [activation_function]
             numerator = self.conv_out_w 
             denominator = self.conv_params["stride"]
             added_value = - (self.conv_params["kernel_size"]) + 2 * self.conv_params["padding"]

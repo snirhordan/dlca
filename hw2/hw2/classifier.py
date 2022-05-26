@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from torch import Tensor, nn
 from typing import Optional
 from sklearn.metrics import roc_curve
-
+import numpy as np
 
 class Classifier(nn.Module, ABC):
     """
@@ -59,7 +59,7 @@ class Classifier(nn.Module, ABC):
         """
         # TODO: Calculate class probabilities for the input.
         # ====== YOUR CODE: ======
-        z = Tensor.abz(z)
+        z = Tensor.abs(z)
         return z/(z.sum(dim=1).repeat(z.shape[1], 1).T)
         # ========================
 
@@ -231,6 +231,7 @@ def select_roc_thresh(
     y_hat = (classifier.forward(x)).detach()
     y_hat = y_hat [:,1]
     fpr, tpr, thresh = roc_curve(y, y_hat)
+    optimal_thresh_idx = np.argmin(np.sqrt((1-tpr)**2 + fpr**2))
     optimal_thresh = np.abs(thresh[np.argmin(np.sqrt((1-tpr)**2 + fpr**2))])
     # ========================
 

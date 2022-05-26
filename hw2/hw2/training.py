@@ -87,12 +87,12 @@ class Trainer(abc.ABC):
             te = self.train_epoch(dl_train, verbose=verbose, **kw)
             
             train_loss.append(te.losses)
-            train_acc.append([te.accuracy])
+            train_acc += [te.accuracy]
 
             test_e = self.test_epoch(dl_test, verbose=verbose, **kw)
             
             test_loss.append(test_e.losses)
-            test_acc.append([test_e.accuracy])
+            test_acc += [test_e.accuracy]
             if best_acc is not None:
                 best_acc = test_e.accuracy if test_e.accuracy > best_acc else best_acc
             elif best_acc is None:
@@ -117,7 +117,7 @@ class Trainer(abc.ABC):
                     break
                 epochs_without_improvement += 1
                 # ========================
-
+        ##print ("test acc" + str(test_acc))
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
 
     def save_checkpoint(self, checkpoint_filename: str):
