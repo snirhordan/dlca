@@ -132,15 +132,26 @@ Gradient descent is a general method of finding a local minimum of a function by
 **
 
 **
-b. Gradient decent is a 
+b. Differences:
 
+1. Computation resources : In gradient descent we calculate the gradient of the loss using the entire training dataset thus order N calculations in contrast with SGD where we sample uniformly ffrom the dataset thus have 1 calculation of the gradient of the loss function.
+2. Guarantees on convergence : Using SGD we can't guarantee we are moving in the direction of steepest descent in EVERY iteration but only that the expected value over uniform distribution over the samples yields the gradient of th loss function. In gradient descent we calculate the gradient using N >> 1 samples then in this case the loss gradient closely resembles the expected value of the actual gradient of the loss function  in EVERY iteration 
+3. Loss plot : Using SGD when far away from minima the convergence is more rapid than in standard gradient descent, yet when we are proximate to he minima there is a phemonema of staying at an asymptotically higher loss htan standard GD. That occurs because each update to the parameters s done according to a randomly picked sample thus the update direction never fully captures the optimal update direction close to the minima.
+4. convergence rates : In SGD In k-th iteration distance between minima and k-iteration parametrs are sublinear, i.e. O(1/k), In Gradient descent the rate s linear and is O(c^k)
+ ** <br \>
+ **
+ c. Observe computational resources in order to reach norm of less than $\epsilon >0$ in Euclidean norm, of the k-th iteration paramters and the minimzer, we need order of O(1/$\epsilon$) which is independent of N (training set size)
+ when using GD the computational resources to reach same guarantee above our of order O(N log(1/$\epsilon$)) which is dependent on N. 
+ 
+In real-world settings usually the dataset size is very large and computational resources are scarce thus SGD is more relavant.
+
+Another factor is the quick minimization of loss of SGD in contrast with GD , even though asymptotically the loss is slightly higher using SGD than GD.
+ 
+ ** <br \>
 **
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+d. 1. The loss using GD is calculated as average loss for each sample.
+      In mentioned approach, loss is average loss of batched summed up. 
+** <br \>
 
 """
 
