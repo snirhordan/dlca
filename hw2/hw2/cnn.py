@@ -3,6 +3,7 @@ import torch.nn as nn
 import itertools as it
 from torch import Tensor
 from typing import Sequence
+import math
 
 from .mlp import MLP, ACTIVATIONS, ACTIVATION_DEFAULT_KWARGS
 
@@ -100,7 +101,7 @@ class CNN(nn.Module):
             counter += 1
             modulo_result = counter % self.pool_every
             if modulo_result == 0:
-                layers += [poolingFunction(**self.pooling_params)]
+                layers += [pooling_function(**self.pooling_params)]
                 tmp = self.pooling_params["kernel_size"]
                 self.conv_out_w = math.floor(self.conv_out_w / tmp)
                 self.conv_out_h = math.floor(self.conv_out_h / tmp)
@@ -144,7 +145,7 @@ class CNN(nn.Module):
         #  return class scores.
         out: Tensor = None
         # ====== YOUR CODE: ======
-        out = (self.feature_extractor(x)).reshape(out.shape[0], -1)
+        out = (self.feature_extractor(x)).reshape(self.feature_extractor(x).shape[0], -1)
         out = self.mlp(out)
         # ========================
         return out
@@ -208,7 +209,9 @@ class ResidualBlock(nn.Module):
         main_layers = []
         channel_aggregate = [in_channels] + channels[:]
         for i in range (len(kernel_sizes)) :
-            mainLayers += [nn.Conv2d(channel_aggregate[i],channel_aggregate[i+1],kernel_size=kernel_sizes[i],bias=True, padding='same')]
+            main_layers += [nn.Conv2d(channel_aggregate[i],channel_aggregate[i+1],kernel_size=kernel_sizes[i],bias=True, padding='same')]
+            if i - len(kernel_sizes) + 1 == 0 :
+                break
             if dropout > 0:
                 main_layers += [nn.Dropout2d(dropout)]
             if batchnorm is True:
@@ -219,6 +222,7 @@ class ResidualBlock(nn.Module):
         if in_channels != channels[-1] :
             shortcut_layers += [nn.Conv2d(in_channels,channels[-1], kernel_size=1, bias=False, padding='same')] 
         self.shortcut_path =  nn.Sequential(*shortcut_layers)
+        
         # ========================
 
     def forward(self, x: Tensor):
