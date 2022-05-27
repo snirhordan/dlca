@@ -130,7 +130,7 @@ def cnn_experiment(
     x = dict(lr=0.1, weight_decay=0, momentum=0.7)
     optimizer = torch.optim.SGD(params=model.parameters(), **x)
     trainer = ClassifierTrainer( model, loss, optimizer )
-    fit_res = trainer.fit( ds_train, ds_test, num_epochs=epochs, checkpoints=checkpoints, early_stopping = early_stopping)
+    fit_res = trainer.fit( DataLoader( ds_train ), DataLoader( ds_test ), num_epochs=epochs, checkpoints=checkpoints, early_stopping = early_stopping)
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)
