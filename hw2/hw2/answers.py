@@ -232,15 +232,29 @@ One we of achieving that can be through decreasing the threshold of diagnosing a
 
 
 part3_q4 = r"""
-**Your answer:**
+**1) From the results that we obtained, we can see that for a model with a depth of one, the decision boundary is very close to being linear. Once we played with the values of the model's width and kept depth=1 we managed to reach more complex decision boundaries.**
+
+**We also noticed that when we increased the depth, the values of the width gained more importance. Once we increased the depth we also got more complex decision boundaries. The increase in depth also yielded models with better performance on the validation set.**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+**2)Our results show  that when width is increasing we get a  better validation accuracy , and the threshold is being updated due to changing of the FPR and FNR.**
+
+**3)For depth = 1 and width = 32 :  valid_acc = 93% and test_acc = 84.0%**
+
+**For depth = 4 and width = 8 : valid_acc = 94% and test_acc = 90.1%**
+
+**We got that the validation accuracy and test accuracy are both higher for the case of depth = 4 and width = 8. The reason for this is the fact that for depth = 1 the decision boundary is more linear and for depth = 4 it's more complex and, the roled of the width in this case is not noticeable.**
+
+**For depth = 1 and width = 128 :  valid_acc = 92.9% and test_acc = 90.7%**
+
+**For depth = 4 and width = 32 :  valid_acc = 93.7% and test_acc = 85.8%**
+
+**Here we got that the decision boundary is more complex with a model with depth = 4 and thus the valid_acc is higher, but because the width is lower we get less test_acc**
+
+
+**4)Validation set is used to fine tune the hyperparameters, also the value of the threshold is optimized using a validation set, and so, leads to better accuracy regarding the test_set.**
+
+**And so, the hyperparameters that were chosen based on the validation set help us in generalizing our model and get the best test_set accuracy.**
 
 """
 # ==============
