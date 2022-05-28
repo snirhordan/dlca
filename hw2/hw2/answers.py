@@ -267,15 +267,31 @@ def part4_optim_hp():
 
 
 part4_q1 = r"""
-**Your answer:**
+**In our answer channel = feature map**
 
+**1) If we ignore the bias then the number of parameters of a single convo. layer is:**
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+**(#channels_previous_layer * kernel_size^2)*#channels_current_layer **
+
+**And so, we get:**
+
+**For Regular Block:** Number of Parameters = (256 * 3^2) * 256 + (256 * 3^2) * 256 = 1179648
+
+**For Bottelneck Block :** Number of Parameters = (256 * 1^2) * 64 + (64 * 3^2)*64 + (64 * 1^2) * 256 = 69632.
+
+**2) The number of floating point operations in single Convo. layer is the number of parameters multiplied by 2*(dimenions_of_single_channel) **
+
+**And so: **
+
+**Bottleneck Block:** floating point operations = 2*32*32*((256 * 1^2) * 64 + (64 * 3^2) * 64 + (64 * 1^2) * 256) = 142,606,336
+
+**Regular block:** floating point operations = 2*32*32*((256 * 3^2) * 256 + (256 * 3^2) * 256) = 2,415,919,104
+
+** And so Our formula is 2*H*W *(k^2 * in * out), where k^2 is the multiplications to calculate the output of a single channel and (H*W) represents the feature map.**
+
+**3) We see that the abitlity to combine the input spatially is better in the Regular Block.**
+
+**The reason for that is that we apply 3 by 3 convolution that yields a receptive field that is wider than the one that we get from from the same method on Bottleneck Block.**
 
 """
 
