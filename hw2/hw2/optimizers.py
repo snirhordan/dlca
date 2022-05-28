@@ -131,8 +131,12 @@ class RMSProp(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        self.prev = [ torch.zeros(dp.size()) for p, dp in self.params if dp is not None ]
-        self.idx = 0        
+        ##self.prev = [ torch.zeros(dp.size()) for p, dp in self.params if dp is not None ]
+        ##self.idx = 0 
+        self.r = dict()
+        for p, _ in self.params:
+            self.r[p] = torch.zeros_like(p)
+        
         # ========================
 
     def step(self):
@@ -145,17 +149,22 @@ class RMSProp(Optimizer):
             # average of it's previous gradients. Use it to update the
             # parameters tensor.
             # ====== YOUR CODE: ======
-            dp += self.reg * p
+            ##dp += self.reg * p
 
-            self.prev[self.idx] = self.decay * self.prev[self.idx] + (1-self.decay) * torch.square(dp)
-            temp = self.prev[self.idx].add_( self.eps )
-            temp = temp.pow_(-1)
-            temp = torch.sqrt( temp )
-            temp = torch.mul( temp, self.learn_rate )
-            temp = torch.mul( temp, dp )
+            ##self.prev[self.idx] = self.decay * self.prev[self.idx] + (1-self.decay) * torch.square(dp)
+            ##temp = self.prev[self.idx].add_( self.eps )
+            ##temp = temp.pow_(-1)
+            ##temp = torch.sqrt( temp )
+            ##temp = torch.mul( temp, self.learn_rate )
+            ##temp = torch.mul( temp, dp )
             
-            p = torch.sub( p, temp )#includes learn rate
-            self.idx += 1
-            if self.idx == len(self.prev):
-                self.idx = 0
+            ##p = torch.sub( p, temp )#includes learn rate
+            ##self.idx += 1
+            ##if self.idx == len(self.prev):
+                ##self.idx = 0
+            first_value = self.decay * self.r[p]
+            decay_compliment = 1 - self.decay
+            self.r[p] =  first_value + decay_compliment*((dp + p * self.reg) ** 2)
+            sqrt = torch.sqrt(self.r[p] + self.eps)
+            p -= self.learn_rate * (dp + p * self.reg)/sqrt
             # ========================
