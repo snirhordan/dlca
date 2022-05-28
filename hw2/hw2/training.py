@@ -113,8 +113,9 @@ class Trainer(abc.ABC):
                 # ========================
             else:
                 # ====== YOUR CODE: ======
-                if early_stopping is not None and epochs_without_improvement >= early_stopping:
-                    break
+                if test_e.accuracy <= best_acc:
+                    if early_stopping is not None and epochs_without_improvement >= early_stopping:
+                        break
                 epochs_without_improvement += 1
                 # ========================
         ##print ("test acc" + str(test_acc))
@@ -344,9 +345,9 @@ class LayerTrainer(Trainer):
 
         # TODO: Evaluate the Layer model on one batch of data.
         # ====== YOUR CODE: ======
-        out = self.model(X)
+        out = self.model( X )
         loss = self.loss_fn(out, y).item()
-        output = torch.argmax( out, dim=1 )
+        output = torch.argmax( out, dim = 1 )
         num_correct = int(sum([1 for idx in range(len(out)) if output[idx] != y[idx]]))
         # ========================
 
