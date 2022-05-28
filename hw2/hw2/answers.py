@@ -15,20 +15,19 @@ part1_q1 = r"""
 **c. This is a linear transformation thus Jacobian of transformation w.r.t X is W^T. No need to explicitly calculate it.**<br />
 Same process for derivative by W:<br />
 **a. Shape of parital derivative of transformation w.r.t W is the shape of X which is 64x512**<br />
-**b. X is sparse depending on the input. Not necessary for the model to learn efficiently, as opposed to W**
+**b. X is sparse depending on the input. Not necessary for the model to learn efficiently, as opposed to W** <br />
 **c. The derivative w.r.t to W is X itself, as seen in implementatoin of linear layer, and therefore no need to calculate Jacobian explicitly.**
 """
 
 part1_q2 = r"""
 **Your answer:**
 
-Backpropegation is not the only method of training neural networks. It is the most commonly used because in most classification tasks the output is a scalar and thus the gradients can be explicitly and  efficiently calculated.
+Backpropegation is not the only method of training neural networks. It is the most commonly used because in most classification tasks the output is a scalar and thus the gradients can be explicitly and  efficiently calculated. Thus when using the chain rule we can easily calculate the infinitesimal change in the loss function w.r.t each of the parameters in the network.
 
-In all models there must be some objective function that is minimized, not necessarily through backpropegation.
-
+In all models there must be some objective function that is minimized, not necessarily through backpropegation. For instance you can have an MLP 
+where the last layer is trained using Least Squared optimizations, the previous layers are initialized randomly, and learning is done 
+by pruning unnecessary connections within the previous to last layers. 
 """
-
-
 # ==============
 # Part 2 (Optimization) answers
 
@@ -79,13 +78,13 @@ def part2_dropout_hp():
     # TODO: Tweak the hyperparameters to get the model to overfit without
     # dropout.
     # ====== YOUR CODE: ======
-    wstd = 0.05 
+    wstd = 0.05
     lr = 1
     # ========================
     return dict(wstd=wstd, lr=lr)
 
 
-part2_q1 = r"""
+part2_q1 = r""" 
 **Your answer:**
 
 
@@ -148,16 +147,22 @@ In real-world settings usually the dataset size is very large and computational 
 Another factor is the quick minimization of loss of SGD in contrast with GD , even though asymptotically the loss is slightly higher using SGD than GD.
  
  ** <br \>
-**
-d. 1. The loss using GD is calculated as average loss for each sample.
-      In mentioned approach, loss is average loss of batched summed up. 
-** <br \>
+**d
+4. A. There is a difference in the two approches.
+When training using GD during backpropegation we update the weights with multilplication of dout * w^t , with dout is of dimensions (d_out, N) and w is of dimensions (d_in, N).
+In the approach described we calculate the change in w, as sum of matrices that are multiplications of (d_out, batch_size) by (batch_size, d_in).
+Algebraically, these are distinct operations.
+
+<br \>
+
+B. We have to save in the cache the inputs for each linear layers for each one of the batches. Thus we have to save the same magnitude of memory as in GD but seuquentially. Therefore we will reach a point after saving the input for each layer of each one of the batcehs that the memory requiremnt will exceed our device's ability. That is because the device cannot handle the full GD thus in the process of incrementing the memory usage increasingly until reaching the same memory requirement as GD, we will run out of memory (mathemaatically the intermidate value theorem)
+
+** <br \> 
 
 """
 
 
 # ==============
-
 
 # ==============
 # Part 3 (MLP) answers
