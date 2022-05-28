@@ -86,12 +86,12 @@ class Trainer(abc.ABC):
             actual_num_epochs += 1
             te = self.train_epoch(dl_train, verbose=verbose, **kw)
             
-            train_loss.append(te.losses)
+            train_loss += (te.losses)
             train_acc += [te.accuracy]
 
             test_e = self.test_epoch(dl_test, verbose=verbose, **kw)
             
-            test_loss.append(test_e.losses)
+            test_loss += (test_e.losses)
             test_acc += [test_e.accuracy]
             if best_acc is not None:
                 best_acc = test_e.accuracy if test_e.accuracy > best_acc else best_acc
