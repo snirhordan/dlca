@@ -202,41 +202,31 @@ def part3_optim_hp():
 
 
 part3_q1 = r"""
-**Your answer:**
+**1) Our train accuracy is relatively high until a certain threshold that limits its peak value. 
+Our optimization error could be better by changing the models hyperparameters or optimizers. And thus changing the optimizer or the hyperparameters could yield a better optimization error.**
 
+**2)There is a small difference between the loss of the test set and the loss of the training set. The reason behind this is that there is no overfitting to the training set and so we get a good generalization ability of our model  and a low generalization error.**
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+**3)When we talk about high approx. error we mainly refer to high loss.
+Our training loss is relatively not low, which indicates a high approx. error.
+One way ,through which we can decrease this error, is by creating a model with more channels.**
 """
 
 part3_q2 = r"""
-**Your answer:**
+**When addressing the validation set, we expect to get FNR > FPR.
+The reason for this assumption is due to the comparison between a positive number and a probability. That's why we expect a higher FNR on the validation set. 
+This assumption was not totally correct, cause we can see from our runs that sometimes FPR can be higher or equal to FNR.**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
 
 """
 
 part3_q3 = r"""
-**Your answer:**
+**1) Our goal is to increase FPR relative to FNR. To achieve that we can increase the threshold in order to minimize the cost.
+By minimizion the cost we decrease the FNR, which decreases the risk of not diagnosing the patient with non-lethal symptoms**
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+**2) In this case we want to increase the FNR relative to FPR. 
+One we of achieving that can be through decreasing the threshold of diagnosing a patient with no clear lethat symptoms with a high probability of dying.**
 
 """
 
