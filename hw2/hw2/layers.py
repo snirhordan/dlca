@@ -415,11 +415,12 @@ class Sequential(Layer):
         self.layers = layers
 
     def forward(self, x, **kw):
-        out = x
+        out = None
 
         # TODO: Implement the forward pass by passing each layer's output
         #  as the input of the next.
         # ====== YOUR CODE: ======
+        out = x
         for layer in self.layers:
             out = layer(out, **kw) 
         # ========================
@@ -427,12 +428,13 @@ class Sequential(Layer):
         return out
 
     def backward(self, dout):
-        din = dout
+        din = None
 
         # TODO: Implement the backward pass.
         #  Each layer's input gradient should be the previous layer's output
         #  gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
+        din = dout
         for layer in reversed(self.layers):
             din = layer.backward(din)
         # ========================
@@ -445,7 +447,7 @@ class Sequential(Layer):
         # TODO: Return the parameter tuples from all layers.
         # ====== YOUR CODE: ======
         for layer in self.layers:
-            params.extend(layer.params())
+            params = params + layer.params()
         # ========================
 
         return params
@@ -504,26 +506,23 @@ class MLP(Layer):
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
         
-        length = len(hidden_features)
-        if (activation == 'relu'):
-            layers.append( Linear(in_features, hidden_features[0]) )
-            layers.append( ReLU() )
-            if dropout > 0 :
-                layers.append( Dropout( dropout  ) ) 
-            for idx in range(length-1):
-                layers.append( Linear(hidden_features[idx], hidden_features[idx+1]) )
-                layers.append( ReLU() )
-                if dropout > 0 :
-                    layers.append( Dropout( dropout  ) ) 
-    
-        elif (activation == 'sigmoid'):
-            layers.append( Linear(in_features, hidden_features[0]) )
-            layers.append( Sigmoid() )
-            for idx in range(length-1):
-                layers.append( Linear(hidden_features[idx], hidden_features[idx+1]) )
-                layers.append( Sigmoid() )
-    
-        layers.append(Linear( hidden_features[length-1], num_classes))
+        if activation == "relu":
+            activation_function = ReLU
+        else:
+            activation_function = Sigmoid
+        final = -1 
+        features = Linear(in_features, hidden_features[0])
+        layers += [features, activation_function()]
+        
+        for i, j in zip(hidden_features[:-1], hidden_features[1:]):
+            if dropout <= 0:
+                layers += [Linear(i, j), activation_function()]
+                continue
+            layers += [Dropout(dropout)]
+            layers += [Linear(i, j), activation_function()]
+        if dropout > 0:
+            layers += [Dropout(dropout)]
+        layers += [Linear(hidden_features[final], num_classes)]
         # ========================
 
         self.sequence = Sequential(*layers)

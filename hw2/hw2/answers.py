@@ -36,9 +36,7 @@ def part2_overfit_hp():
     wstd, lr, reg = 0, 0, 0
     # TODO: Tweak the hyperparameters until you overfit the small dataset.
     # ====== YOUR CODE: ======
-    wstd = 0.05
-    lr = 3
-    reg = 1
+    wstd, lr, reg = 0.05, 0.05, 0
     # ========================
     return dict(wstd=wstd, lr=lr, reg=reg)
 
@@ -55,11 +53,11 @@ def part2_optim_hp():
     # TODO: Tweak the hyperparameters to get the best results you can.
     # You may want to use different learning rates for each optimizer.
     # ====== YOUR CODE: ======
-    wstd = 0.05
-    reg = 1.5
-    lr_rmsprop = 0.5
+    wstd = 0.5
+    reg = 0.00000001
+    lr_rmsprop = 0.00019
     lr_vanilla = 0.01
-    lr_momentum = 0.5
+    lr_momentum = 0.0042
     # =======================
     return dict(
         wstd=wstd,
@@ -79,7 +77,7 @@ def part2_dropout_hp():
     # dropout.
     # ====== YOUR CODE: ======
     wstd = 0.05
-    lr = 1
+    lr = 0.001
     # ========================
     return dict(wstd=wstd, lr=lr)
 
@@ -87,13 +85,11 @@ def part2_dropout_hp():
 part2_q1 = r""" 
 **Your answer:**
 
+The graphs match what we expected to see. <br/>
+In high dropout setting, 0.8, we see decreased training accuracy compared with no dropout , because training a neural network with lower dropout has a higher propensity to overfit the data.<br />
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+Dropout is a regularization technique, thus we expect the NN to perform better on the testing dataset when regularization is done with high probability than with lower probability. <br />
+In the test accuracy section, we have that the neural network with high dropout has higher accuracy because it generalizes better. <br />
 
 """
 
