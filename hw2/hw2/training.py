@@ -277,6 +277,7 @@ class ClassifierTrainer(Trainer):
         # ====== YOUR CODE: ======
         self.optimizer.zero_grad()
         myLoss = self.loss_fn(self.model(X),y).backward()
+        #backward on model?
         self.optimizer.step()
         batch_loss, num_correct = self.test_batch(batch)
         # ========================
