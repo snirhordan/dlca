@@ -507,22 +507,32 @@ class MLP(Layer):
         # ====== YOUR CODE: ======
         
         if activation == "relu":
-            activation_function = ReLU
+            features = Linear(in_features, hidden_features[0])
+            layers += [features, Relu()]
+            
+            for i, j in zip(hidden_features[:-1], hidden_features[1:]):
+                if dropout <= 0:
+                    layers += [Linear(i, j), Relu()]
+                    continue
+                layers += [Dropout(dropout)]
+                layers += [Linear(i, j), Relu()]
+            if dropout > 0:
+                layers += [Dropout(dropout)]
+            layers += [Linear(hidden_features[-1], num_classes)]
         else:
-            activation_function = Sigmoid
-        final = -1 
-        features = Linear(in_features, hidden_features[0])
-        layers += [features, activation_function()]
-        
-        for i, j in zip(hidden_features[:-1], hidden_features[1:]):
-            if dropout <= 0:
-                layers += [Linear(i, j), activation_function()]
-                continue
-            layers += [Dropout(dropout)]
-            layers += [Linear(i, j), activation_function()]
-        if dropout > 0:
-            layers += [Dropout(dropout)]
-        layers += [Linear(hidden_features[final], num_classes)]
+            features = Linear(in_features, hidden_features[0])
+            layers += [features, Sigmoid()]
+            
+            for i, j in zip(hidden_features[:-1], hidden_features[1:]):
+                if dropout <= 0:
+                    layers += [Linear(i, j), Sigmoid()]
+                    continue
+                layers += [Dropout(dropout)]
+                layers += [Linear(i, j), Sigmoid()]
+            if dropout > 0:
+                layers += [Dropout(dropout)]
+            layers += [Linear(hidden_features[-1], num_classes)]
+            
         # ========================
 
         self.sequence = Sequential(*layers)
