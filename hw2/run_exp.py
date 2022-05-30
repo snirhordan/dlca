@@ -7,7 +7,7 @@ from typing import List
 EXPERIMENT_LIST = ['1.1', '1.2', '1.3', '1.4', '2', 'all']
 
 
-def generate_test_name(test_num):
+def generate_test_name(test_num) -> str:
     return f'exp{test_num.replace(".", "_")}'
 
 
