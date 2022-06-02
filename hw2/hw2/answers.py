@@ -317,67 +317,48 @@ part4_q1 = r"""
 
 
 part5_q1 = r"""
-**Your answer:**
 
+1. Optimal results were when L = 4,8 when taking 64 filters and L=2,4 when using 32 layers.  It indicates a correct balance of both a lrage enough number of parametrs in the neural network and size that is not large enough to not be able to generalize. When the layer depth is too small the neural network isn't expressive enough, i.e. the function space it spans isn't rich enough to represent the udnerlying distribution of the dataset.
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+2. When the network depth is too large the model becomes untrainable due to the vanishing gradients phenomenon. This issue can be solved using residual blocks, which pass the convolution layers and thereby avoiding the vanishing gradients problem. Additionally, when trainin deep neural networks the distribution on the ouputs of each layer changes with different batches resulting in slower convergence. When normalizing the batch the distribution over the layers' inputs is regularized. 
+
 
 """
 
 part5_q2 = r"""
-**Your answer:**
 
+This experiment compares the effectiveness of the number of convolutional filters with varying depths of networks. 
+When the depth of the neural network increases, so does increasing the number of filters effects positively on the performence of the network.
+Concretely, best testing accuracies where (L=2, K=32), (L=4, K=64), (L=8, k=256)
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+All the models were trainable, in contrast to exp 1.1. In experiment 1.1 we isolated the number of layers as the parameter we are changing and n the second experiment we are interested in observing the change in training isolating the number of features.
 
 """
 
 part5_q3 = r"""
-**Your answer:**
 
+On this experiment we observe that all neural networks perform relatively similarly on the test accuracy, with the depth 4 taking most time to converge. This is expected because there are more parameters to tune.
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+The training accuracy of the shallow networks is much higher than the test accuracy which means the overfit the data. The deeper neural network has most similar training/test accuracies, which means they generalize best.
 
 """
 
 part5_q4 = r"""
-**Your answer:**
 
+We see in experiment 4 in the first part when k = [32], when the depth is too large the model trains slower and isn't able to generalize as well as those with lower depths (depth 8,16)
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+Yet when K=[64, 128, 256], we get the even the model with most depth is able to generalize well. This is hown in the similarly high test accuracies for models of all depths in this case.  A reason for this is the choice of ascending number of features which cature "finer" details of the images.
+
+Comparing exp 1.4 to exp 1.1 and 1.3, we see that we get better test accuracies. This implies that using increasing number of feature values in the architecture is beneficial for learning images.
+
 
 """
 
 part5_q5 = r"""
-**Your answer:**
 
+1. Main differences was using Residual Blocks, which prevent gradient vanishing, dropout, and batchnorm. These arose from conclusions from the previous experiments. 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+2. Model test accuracy much increased from previous experiments when using 12 layers in experiment 2. 
+Compared to experiment 1, the model generalizes much betterand  all models configurations were trainable.
 """
 # ==============
