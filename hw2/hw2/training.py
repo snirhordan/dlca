@@ -93,8 +93,8 @@ class Trainer(abc.ABC):
             
             test_loss += (test_e.losses)
             test_acc += [test_e.accuracy]
-            if best_acc is None:
-                best_acc = test_e.accuracy
+            if actual_num_epochs == 1:
+                best_acc = test_acc[-1]
 
             # ========================
 
@@ -328,8 +328,8 @@ class LayerTrainer(Trainer):
         #    not a tensor) as num_correct.
         # ====== YOUR CODE: ======
         self.optimizer.zero_grad()
-        out = self.model(X)
-        loss = self.loss_fn(out, y)
+        out = self.model.forward(X)
+        loss = self.loss_fn.forward(out, y)
         dout = self.loss_fn.backward(loss)
         self.model.backward(dout)
         self.optimizer.step()
