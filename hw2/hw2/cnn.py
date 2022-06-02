@@ -353,20 +353,20 @@ class ResNet(CNN):
                                          activation_params = self.activation_params)]
                     
             layers += [pool_func(**self.pooling_params)]
-        r = len(self.channels) % self.pool_every
-        if r > 0: # channels remaining..
-            if all_channels[-r - 1] != all_channels[-1] or not self.bottleneck:
-                layers += [ResidualBlock(all_channels[-r - 1], 
-                                     all_channels[-r:], 
-                                     kernel_sizes = [3] * r,
+        length = len(self.channels) % self.pool_every
+        if length > 0: # channels remaining..
+            if all_channels[-length - 1] != all_channels[-1] or not self.bottleneck:
+                layers += [ResidualBlock(all_channels[-length - 1], 
+                                     all_channels[-length:], 
+                                     kernel_sizes = [3] * length,
                                      batchnorm = self.batchnorm,
                                      dropout = self.dropout,
                                      activation_type = self.activation_type,
                                      activation_params = self.activation_params)]
             else: 
                 layers += [ResidualBottleneckBlock(
-                                     in_out_channels = int(all_channels[-r - 1]), 
-                                     inner_channels = all_channels[-r:-1], 
+                                     in_out_channels = int(all_channels[-length - 1]), 
+                                     inner_channels = all_channels[-length:-1], 
                                      inner_kernel_sizes = [3] * (self.pool_every - 2),
                                      batchnorm = self.batchnorm,
                                      dropout = self.dropout,
@@ -425,11 +425,11 @@ class YourCNN(CNN):
                                          activation_params = self.activation_params)]
             
             layers += [pool_func(**self.pooling_params)]
-        r = len(self.channels) % self.pool_every
-        if r > 0: # channels remaining..
-            layers += [ResidualBlock(all_channels[-r - 1], 
-                                     all_channels[-r:], 
-                                     kernel_sizes = [3] * r,
+        length = len(self.channels) % self.pool_every
+        if length > 0: 
+            layers += [ResidualBlock(all_channels[-length - 1], 
+                                     all_channels[-length:], 
+                                     kernel_sizes = [3] * length,
                                      batchnorm = self.batchnorm,
                                      dropout = self.dropout,
                                      activation_type = self.activation_type,

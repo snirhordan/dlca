@@ -118,19 +118,17 @@ def cnn_experiment(
     #   for you automatically.
     fit_res = None
     # ====== YOUR CODE: ======
-    x0,_ = ds_train[0] #dimensions
-    in_size = x0.shape
-    num_classes = 10
-    model = ArgMaxClassifier(
-            model = CNN( in_size, num_classes, channels=[32], pool_every=pool_every, hidden_dims=hidden_dims,
-        conv_params=dict(kernel_size=3, stride=1, padding=1),
-        pooling_params=dict(kernel_size=2) )
-    )
+    channels, conv_pars, pooling = [filters for filters in filters_per_layer for i in range(layers_per_block)], {'kernel_size' : 3, 'padding' : 1, 'stride' : 1}, {'kernel_size' : 2}
+    shape = ds_train[0][0].shape
+    model = ArgMaxClassifier(model_cls(shape,10,channels,pool_every,hidden_dims,conv_params=conv_pars,pooling_params=pooling))
     loss = torch.nn.CrossEntropyLoss()
-    x = dict(lr=0.1, weight_decay=0, momentum=0.7)
-    optimizer = torch.optim.SGD(params=model.parameters(), **x)
-    trainer = ClassifierTrainer( model, loss, optimizer )
-    fit_res = trainer.fit( DataLoader( ds_train ), DataLoader( ds_test ), num_epochs=epochs, checkpoints=checkpoints, early_stopping = early_stopping)
+    opt = torch.optim.Adam(model.parameters(),lr=lr)
+    cls_trainer = ClassifierTrainer(model,loss_fn=loss,optimizer=opt,device=device)
+    test_dataloader = torch.utils.data.DataLoader(ds_test,batch_size=bs_test,shuffle=False,num_workers=2)
+    train_dataloader = torch.utils.data.DataLoader(ds_train,batch_size=bs_train,shuffle=True,num_workers=2)
+
+    fit_res = cls_trainer.fit(dl_train = train_dataloader,dl_test = test_dataloader, num_epochs = epochs,early_stopping = early_stopping, max_batches = batches)
+    # raise NotImplementedError()
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)

@@ -26,7 +26,7 @@ def generate_test_cli(args) -> List[str]:
                     test_name = generate_test_name(experiment)
                     k_str = '-K ' + str(K)
                     l_str = f'-L {L}'
-                    p_str = '-P 2'
+                    p_str = '-P 8' #2
                     h_str = '-H 100'
                     commands.append(f'{default_command} {test_name} {k_str} {l_str} {p_str} {h_str}')
 
@@ -39,7 +39,7 @@ def generate_test_cli(args) -> List[str]:
                     test_name = generate_test_name(experiment)
                     k_str = '-K ' + str(K)
                     l_str = f'-L {L}'
-                    p_str = '-P 2'
+                    p_str = '-P 8'#2
                     h_str = '-H 100'
                     commands.append(f'{default_command} {test_name} {k_str} {l_str} {p_str} {h_str}')
 
@@ -51,7 +51,7 @@ def generate_test_cli(args) -> List[str]:
                 test_name = generate_test_name(experiment)
                 k_str = '-K ' + ' '.join([str(k) for k in k_values])
                 l_str = f'-L {L}'
-                p_str = '-P 2'
+                p_str = '-P 8' #2
                 h_str = '-H 100'
                 commands.append(f'{default_command} {test_name} {k_str} {l_str} {p_str} {h_str}')
 
@@ -64,7 +64,7 @@ def generate_test_cli(args) -> List[str]:
                     test_name = generate_test_name(experiment)
                     k_str = '-K ' + ' '.join([str(k) for k in k_values[i]])
                     l_str = f'-L {L}'
-                    p_str = '-P 2'
+                    p_str = '-P 8' #2
                     h_str = '-H 100'
                     m_str = '-M resnet'
                     commands.append(f'{default_command} {test_name} {k_str} {l_str} {p_str} {h_str} {m_str}')
@@ -77,7 +77,7 @@ def generate_test_cli(args) -> List[str]:
                 test_name = generate_test_name(experiment)
                 k_str = '-K ' + ' '.join([str(k) for k in k_values])
                 l_str = f'-L {L}'
-                p_str = '-P 2'
+                p_str = '-P 8'
                 h_str = '-H 100'
                 m_str = '-M ycn'
                 commands.append(f'{default_command} {test_name} {k_str} {l_str} {p_str} {h_str} {m_str}')
