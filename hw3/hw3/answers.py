@@ -22,7 +22,14 @@ def part1_rnn_hyperparams():
     )
     # TODO: Set the hyperparameters to train the model.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    hypers['batch_size'] = 250
+    hypers['seq_len'] = 100
+    hypers['h_dim'] = 250
+    hypers['n_layers'] = 2
+    hypers['dropout'] = 0.01
+    hypers['learn_rate'] = 0.005
+    hypers['lr_sched_factor'] = 0.05
+    hypers['lr_sched_patience'] = 1
     # ========================
     return hypers
 
@@ -32,7 +39,8 @@ def part1_generation_params():
     temperature = 0.0001
     # TODO: Tweak the parameters to generate a literary masterpiece.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    temperature = 0.5
+    start_seq = "TRAM"
     # ========================
     return start_seq, temperature
 
