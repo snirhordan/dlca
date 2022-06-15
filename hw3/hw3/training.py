@@ -225,20 +225,23 @@ class Trainer(abc.ABC):
 class RNNTrainer(Trainer):
     def __init__(self, model, loss_fn, optimizer, device=None):
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        super().__init__(model,device)
+        self.model = model
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
         # ========================
 
     def train_epoch(self, dl_train: DataLoader, **kw):
         # TODO: Implement modifications to the base method, if needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.hidden_state = torch.zeros( (dl_train.batch_size, self.model.n_layers, self.model.h_dim), requires_grad = True, device = self.device )
         # ========================
         return super().train_epoch(dl_train, **kw)
 
     def test_epoch(self, dl_test: DataLoader, **kw):
         # TODO: Implement modifications to the base method, if needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.hidden_state = torch.zeros( (dl_test.batch_size, self.model.n_layers, self.model.h_dim), requires_grad = True, device = self.device )
         # ========================
         return super().test_epoch(dl_test, **kw)
 
@@ -256,7 +259,16 @@ class RNNTrainer(Trainer):
         #  - Update params
         #  - Calculate number of correct char predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.optimizer.zero_grad()
+        self.hidden_state.detach_()
+        output, self.hidden_state = self.model(x, self.hidden_state)
+        output = output.transpose(1, 2)
+        loss = self.loss_fn(output, y)
+        loss.backward()
+        self.optimizer.step()
+        max_score = output.argmax(1)
+        num_correct = torch.sum((max_score == y))
+        num_correct.to(torch.float64)
         # ========================
 
         # Note: scaling num_correct by seq_len because each sample has seq_len
