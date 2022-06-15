@@ -82,7 +82,13 @@ class Trainer(abc.ABC):
             #  - Use the train/test_epoch methods.
             #  - Save losses and accuracies in the lists above.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            actual_num_epochs +=1
+            train_result = self.train_epoch(dl_train, **kw)
+            train_loss.append(sum(train_result.losses) /len(dl_train))
+            train_acc.append(train_result.accuracy)
+            test_result = self.test_epoch(dl_test, **kw)
+            test_loss.append(sum(test_result.losses) /len(dl_test))
+            test_acc.append(test_result.accuracy)
             # ========================
 
             # TODO:
@@ -93,17 +99,34 @@ class Trainer(abc.ABC):
             #    the checkpoints argument.
             if best_acc is None or test_result.accuracy > best_acc:
                 # ====== YOUR CODE: ======
-                raise NotImplementedError()
+                epochs_without_improvement = 0
+                best_acc = test_result.accuracy
                 # ========================
             else:
                 # ====== YOUR CODE: ======
-                raise NotImplementedError()
+                if test_acc[-1] > best_acc:
+                    best_acc = test_result.accuracy
+                epochs_without_improvement += 1
+            if early_stopping and epochs_without_improvement == early_stopping:
+                return FitResult(actual_num_epochs,train_loss, train_acc, test_loss, test_acc)
+            
+            if checkpoint_file:
+                saved_state = dict(
+                    best_acc=best_acc,
+                    ewi=epochs_without_improvement,
+                    model_state=self.model.state_dict(),
+                )
+                self.my_save_checkpoint(checkpoint_file, saved_state)
                 # ========================
 
             if post_epoch_fn:
                 post_epoch_fn(epoch, train_result, test_result, verbose)
 
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
+    
+    def my_save_checkpoint(self, checkpoint_filename: str, saved_state):
+        torch.save(saved_state, checkpoint_file)
+        print(f"\n*** Saved checkpoint {checkpoint_file} " f"at epoch {epoch + 1}")
 
     def save_checkpoint(self, checkpoint_filename: str):
         """
