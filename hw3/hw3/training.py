@@ -8,7 +8,7 @@ from torch import Tensor
 from typing import Any, Tuple, Callable, Optional, cast
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-
+from pathlib import Path
 from cs236781.train_results import FitResult, BatchResult, EpochResult
 
 
@@ -68,6 +68,15 @@ class Trainer(abc.ABC):
 
         train_loss, train_acc, test_loss, test_acc = [], [], [], []
         best_acc = None
+        checkpoint_file = None
+        if checkpoints is not None:
+            checkpoint_file = f"{checkpoints}.pt"
+            Path(os.path.dirname(checkpoint_file)).mkdir(exist_ok=True)
+            if os.path.isfile(checkpoint_file):
+                saved_state = torch.load(checkpoint_file, map_location=self.device)
+                best_acc = saved_state.get("best_acc", best_acc)
+                epochs_without_improvement = saved_state.get("ewi", epochs_without_improvement)
+                self.model.load_state_dict(saved_state["model_state"])
 
         for epoch in range(num_epochs):
             verbose = False  # pass this to train/test_epoch.
@@ -116,7 +125,7 @@ class Trainer(abc.ABC):
                     ewi=epochs_without_improvement,
                     model_state=self.model.state_dict(),
                 )
-                self.my_save_checkpoint(checkpoint_file, saved_state)
+                self.my_save_checkpoint(checkpoint_file, saved_state, epoch)
                 # ========================
 
             if post_epoch_fn:
@@ -124,9 +133,9 @@ class Trainer(abc.ABC):
 
         return FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc)
     
-    def my_save_checkpoint(self, checkpoint_filename: str, saved_state):
-        torch.save(saved_state, checkpoint_file)
-        print(f"\n*** Saved checkpoint {checkpoint_file} " f"at epoch {epoch + 1}")
+    def my_save_checkpoint(self, checkpoint_filename: str, saved_state, epoch):
+        torch.save(saved_state, checkpoint_filename)
+        print(f"\n*** Saved checkpoint {checkpoint_filename} " f"at epoch {epoch + 1}")
 
     def save_checkpoint(self, checkpoint_filename: str):
         """
@@ -340,7 +349,11 @@ class VAETrainer(Trainer):
         x = x.to(self.device)  # Image batch (N,C,H,W)
         # TODO: Train a VAE on one batch.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.optimizer.zero_grad()
+        x_r,u,log= self.model(x)
+        loss, data_loss, _ = self.loss_fn(x, x_r, u, log)
+        loss.backward()
+        self.optimizer.step()
         # ========================
 
         return BatchResult(loss.item(), 1 / data_loss.item())
@@ -352,7 +365,8 @@ class VAETrainer(Trainer):
         with torch.no_grad():
             # TODO: Evaluate a VAE on one batch.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            x_r,u,log = self.model(x)
+            loss, data_loss, _ = self.loss_fn(x, x_r, u, log)
             # ========================
 
         return BatchResult(loss.item(), 1 / data_loss.item())
