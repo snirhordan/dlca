@@ -22,14 +22,14 @@ def part1_rnn_hyperparams():
     )
     # TODO: Set the hyperparameters to train the model.
     # ====== YOUR CODE: ======
-    hypers['batch_size'] = 250
-    hypers['seq_len'] = 100
-    hypers['h_dim'] = 250
-    hypers['n_layers'] = 2
-    hypers['dropout'] = 0.01
-    hypers['learn_rate'] = 0.005
-    hypers['lr_sched_factor'] = 0.05
-    hypers['lr_sched_patience'] = 1
+    hypers["batch_size"] = 1000
+    hypers["seq_len"] = 10
+    hypers["h_dim"]=1000
+    hypers["n_layers"]=10
+    hypers["dropout"]=0.1
+    hypers["learn_rate"]=0.01
+    hypers["lr_sched_factor"]=0.2
+    hypers["lr_sched_patience"]=5   
     # ========================
     return hypers
 
@@ -39,8 +39,7 @@ def part1_generation_params():
     temperature = 0.0001
     # TODO: Tweak the parameters to generate a literary masterpiece.
     # ====== YOUR CODE: ======
-    temperature = 0.5
-    start_seq = "TRAM"
+    raise NotImplementedError()
     # ========================
     return start_seq, temperature
 
@@ -88,12 +87,13 @@ part1_q4 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+**a. We lower the temprature for the model to make the conditional distribution of the next word givn the current one as dissimilar to uniform distribution as possible. If the distribution were indeed uniform then taking maximum argument as criterion will yield very unpredictable and thus uninformative results.
+**
+
+**
+b. Probability over the output with temparature T defined as $ e^{y_i/T} / \sum{e^{y_i/T}}  $
+If T is very large than the exponent is very close to 0, then the numerator will be around 1 and denominator around n, then for any output we obtain a distribution similar to uniform distribution.
+**
 
 """
 # ==============
@@ -111,12 +111,11 @@ def part2_vae_hyperparams():
     )
     # TODO: Tweak the hyperparameters to generate a former president.
     # ====== YOUR CODE: ======
-    hypers['batch_size'] = 64
-    hypers['h_dim'] = 512
-    hypers['z_dim'] = 128
-    hypers['x_sigma2'] = 0.00199
-    hypers['learn_rate'] = 0.00021
-    hypers['betas'] = (0.9,0.999)
+    hypers = dict(
+        batch_size=64,
+        h_dim=512, z_dim=128, x_sigma2=0.0002,
+        learn_rate=0.00004, betas=(0.9, 0.999)
+    )
     # ========================
     return hypers
 

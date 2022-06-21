@@ -19,18 +19,27 @@ class EncoderCNN(nn.Module):
         #  use pooling or only strides, use any activation functions,
         #  use BN or Dropout, etc.
         # ====== YOUR CODE: ======
-        modules.append(nn.Conv2d(in_channels, 64, 5, stride=2))
-        modules.append(nn.BatchNorm2d(64))
-        modules.append(nn.ReLU())
-        modules.append(nn.Conv2d(64, 128, 5, stride=2))
-        modules.append(nn.BatchNorm2d(128))
-        modules.append(nn.ReLU())
-        modules.append(nn.Conv2d(128, 512, 5, stride=2))
-        modules.append(nn.BatchNorm2d(512))
-        modules.append(nn.ReLU())
-        modules.append(nn.Conv2d(512, out_channels, 1))
-        modules.append(nn.BatchNorm2d(out_channels))
-        modules.append(nn.ReLU())
+        conv = nn.Conv2d(in_channels, 64, 5, stride=2)
+        function = nn.ReLU()
+        BatchNorm = nn.BatchNorm2d(64)
+        modules.append(conv)
+        modules.append(BatchNorm)
+        modules.append(function)
+        conv = nn.Conv2d(64, 128, 5, stride=2)
+        BatchNorm = nn.BatchNorm2d(128)
+        modules.append(conv)
+        modules.append(BatchNorm)
+        modules.append(function)
+        conv = nn.Conv2d(128, 512, 5, stride=2)
+        BatchNorm = nn.BatchNorm2d(512)
+        modules.append(conv)
+        modules.append(BatchNorm)
+        modules.append(function)
+        conv = nn.Conv2d(512, out_channels, 1)
+        BatchNorm = nn.BatchNorm2d(out_channels)
+        modules.append(conv)
+        modules.append(BatchNorm)
+        modules.append(function)
         # ========================
         self.cnn = nn.Sequential(*modules)
 
@@ -53,17 +62,26 @@ class DecoderCNN(nn.Module):
         #  output should be a batch of images, with same dimensions as the
         #  inputs to the Encoder were.
         # ====== YOUR CODE: ======
-        modules.append(nn.ConvTranspose2d(in_channels, 512, 5, stride=2))
-        modules.append(nn.BatchNorm2d(512))
-        modules.append(nn.ReLU())
-        modules.append(nn.ConvTranspose2d(512, 128, 5, stride=2))
-        modules.append(nn.BatchNorm2d(128))
-        modules.append(nn.ReLU())
-        modules.append(nn.ConvTranspose2d(128, 64, 5, stride=2))
-        modules.append(nn.BatchNorm2d(64))
-        modules.append(nn.ReLU())
-        modules.append(nn.ConvTranspose2d(64, out_channels, 4))
-        modules.append(nn.BatchNorm2d(out_channels))
+        function = nn.ReLU()
+        conv = nn.ConvTranspose2d(in_channels, 512, 5, stride=2)
+        BatchNorm = nn.BatchNorm2d(512)
+        modules.append(conv)
+        modules.append(BatchNorm)
+        modules.append(function)
+        conv = nn.ConvTranspose2d(512, 128, 5, stride=2)
+        BatchNorm = nn.BatchNorm2d(128)
+        modules.append(conv)
+        modules.append(BatchNorm)
+        modules.append(function)
+        conv = nn.ConvTranspose2d(128, 64, 5, stride=2)
+        BatchNorm = nn.BatchNorm2d(64)
+        modules.append(conv)
+        modules.append(BatchNorm)
+        modules.append(function)
+        conv = nn.ConvTranspose2d(64, out_channels, 4)
+        BatchNorm = nn.BatchNorm2d(out_channels)
+        modules.append(conv)
+        modules.append(BatchNorm)
         # ========================
         self.cnn = nn.Sequential(*modules)
 
@@ -115,11 +133,12 @@ class VAE(nn.Module):
         #  2. Apply the reparametrization trick to obtain z.
         # ====== YOUR CODE: ======
         x = self.features_encoder.forward(x)
-        x = x.reshape((x.shape[0], -1))
+        shape = x.shape[0]
+        x = x.reshape((shape, -1))
         log_sigma2 = self.log.forward(x)
         mu = self.mu.forward(x)
         u = torch.normal(torch.zeros_like(mu), torch.ones_like(mu))
-        z = mu + (torch.normal(torch.zeros_like(mu), torch.ones_like(mu)) * torch.exp(log_sigma2))
+        z = mu + u * torch.exp(log_sigma2)
         # ========================
 
         return z, mu, log_sigma2
@@ -152,7 +171,10 @@ class VAE(nn.Module):
             #    the mean, i.e. psi(z).
             # ====== YOUR CODE: ======
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            samples = self.decode(torch.normal(torch.zeros(n, self.z_dim), 1).to(device))
+            z_dim = self.z_dim
+            tmp = torch.zeros(n, z_dim)
+            tmp1 = torch.normal(tmp, 1).to(device)
+            samples = self.decode(tmp1)
             # ========================
 
         # Detach and move to CPU for display purposes
@@ -186,8 +208,10 @@ def vae_loss(x, xr, z_mu, z_log_sigma2, x_sigma2):
     #  2. You need to average over the batch dimension.
     # ====== YOUR CODE: ======
     data_loss = nn.functional.mse_loss(xr, x)
-    sum_of_sigmas = torch.sum(1 + z_log_sigma2 - z_mu.pow(2) - z_log_sigma2.exp())
-    loss =  (1.0 / x_sigma2) * data_loss - sum_of_sigmas / x.shape[0]
+    shape = x.shape[0]
+    tmp_sum = torch.sum(1 + z_log_sigma2 - z_mu.pow(2) - z_log_sigma2.exp())
+    one_simgma = (1.0 / x_sigma2)
+    loss =  one_simgma * data_loss - tmp_sum / shape
     # ========================
 
     return loss, data_loss, kldiv_loss
