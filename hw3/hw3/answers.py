@@ -202,12 +202,12 @@ def part3_gan_hyperparams():
     hypers['batch_size'] = 8
     hypers['z_dim'] = 100
     hypers['data_label'] = 1
-    hypers['label_noise'] = 0.1999
-    hypers['discriminator_optimizer']['lr'] = 0.0001999
+    hypers['label_noise'] = 0.2
+    hypers['discriminator_optimizer']['lr'] = 0.0002
     hypers['discriminator_optimizer']['type'] = 'Adam'
     hypers['discriminator_optimizer']['betas'] =(0.5, 0.999)
     hypers['generator_optimizer']['type'] = 'Adam'
-    hypers['generator_optimizer']['lr'] = 0.0001999
+    hypers['generator_optimizer']['lr'] = 0.0002
     hypers['generator_optimizer']['betas'] = (0.5, 0.999)
     # ========================
     return hypers
