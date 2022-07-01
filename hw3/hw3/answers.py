@@ -39,50 +39,41 @@ def part1_generation_params():
     temperature = 0.0001
     # TODO: Tweak the parameters to generate a literary masterpiece.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    start_seq = "When she was just a girl"
+    temperature = 0.5
     # ========================
     return start_seq, temperature
 
-
 part1_q1 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+        
+        since we are having an big corpus this means that loading it to memroy will take a long
+        time and will make the processing slower, to avoid that we split that to small parts that we
+        load every time.
 
 """
 
 part1_q2 = r"""
 **Your answer:**
+            it possible that the generated text clearly shows memory longer than the sequence length because 
+            we dont flush or reset the hidden state .
+            Instead of that we tend to keep them and we pass it in time to the next seqeunce .
+            The generated text learns the connections between the characters and have memory longer than 
+            a single patch . 
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
 
 """
 
 part1_q3 = r"""
 **Your answer:**
+	We are not shuffling the order of batches when training because we want to train the module with the right order
+	of the batcher , keeping the correct order means that we are having a correct relation and order between the
+	sentnces in the text which keeps it right logic between them , this means it would have in memry the right 
+	context between the different parts of the text like they were in the original text.
+	This should help our module to generate a text that is simmilar to the original text.
 
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
 
 """
-
 part1_q4 = r"""
 **Your answer:**
 
