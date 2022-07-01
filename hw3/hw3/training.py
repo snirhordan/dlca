@@ -252,6 +252,7 @@ class Trainer(abc.ABC):
 
         return EpochResult(losses=losses, accuracy=accuracy)
 
+
 class RNNTrainer(Trainer):
     def __init__(self, model, loss_fn, optimizer, device=None):
         # ====== YOUR CODE: ======
@@ -326,6 +327,7 @@ class RNNTrainer(Trainer):
             # ========================
 
         return BatchResult(loss.item(), num_correct.item() / seq_len)
+
 
 class VAETrainer(Trainer):
     def __init__(

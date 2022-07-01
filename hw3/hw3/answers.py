@@ -22,14 +22,14 @@ def part1_rnn_hyperparams():
     )
     # TODO: Set the hyperparameters to train the model.
     # ====== YOUR CODE: ======
-    hypers["batch_size"] = 1000
-    hypers["seq_len"] = 10
-    hypers["h_dim"]=1000
-    hypers["n_layers"]=10
-    hypers["dropout"]=0.1
-    hypers["learn_rate"]=0.01
-    hypers["lr_sched_factor"]=0.2
-    hypers["lr_sched_patience"]=5   
+    hypers['batch_size'] = 500
+    hypers['seq_len'] = 128
+    hypers['h_dim'] = 500
+    hypers['n_layers'] = 2
+    hypers['dropout'] = 0.01
+    hypers['learn_rate'] = 0.0007
+    hypers['lr_sched_factor'] = 0.08
+    hypers['lr_sched_patience'] = 3
     # ========================
     return hypers
 
