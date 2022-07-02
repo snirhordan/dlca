@@ -89,6 +89,7 @@ c. Using a very low temperature means that the variance of the distribution is a
 This means the the model would be very far from a uniform distribution.
 As a cosequence to that, the generated model would choose only that chars that it's certain about, without taking any risks in choosing other chars.
 This would yield corpus with a very constrained number of chars, becuase the other chars didn't have a chance of being picked by the model.
+**
 """
 # ==============
 
