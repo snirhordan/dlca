@@ -47,30 +47,26 @@ def part1_generation_params():
 part1_q1 = r"""
 **Your answer:**
         
-        since we are having an big corpus this means that loading it to memroy will take a long
-        time and will make the processing slower, to avoid that we split that to small parts that we
-        load every time.
+        Since we have a large corpus, this means it takes a long time to load into memory, and will slow down the processing. 
+        We avoid this phenomenon by breaking the corpus down into small parts and load one part at a time to the memory.
 
 """
 
 part1_q2 = r"""
 **Your answer:**
-            it possible that the generated text clearly shows memory longer than the sequence length because 
-            we dont flush or reset the hidden state .
-            Instead of that we tend to keep them and we pass it in time to the next seqeunce .
-            The generated text learns the connections between the characters and have memory longer than 
-            a single patch . 
-
+            The generated text may clearly indicate a longer memory than the sequence length, the reason to this is the fact that we don't flush or reset hidden states. 
+            Instead, we keep them and pass them on to the next sequence in time.
+            The generated text learns connections between characters, and thus consumes more memory per patch.
 
 """
 
 part1_q3 = r"""
 **Your answer:**
-	We are not shuffling the order of batches when training because we want to train the module with the right order
-	of the batcher , keeping the correct order means that we are having a correct relation and order between the
-	sentnces in the text which keeps it right logic between them , this means it would have in memry the right 
-	context between the different parts of the text like they were in the original text.
-	This should help our module to generate a text that is simmilar to the original text.
+            We don't mix the order of the batches when training because we want to train the modules in the correct order.
+            Training the modules according to the correct order insures keeping a correct and a logical relationships between the sentences and also regarding the context.
+            This helps our module in generating a text which is similar to the original text.
+            
+
 
 
 """
