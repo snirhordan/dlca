@@ -71,13 +71,17 @@ part1_q3 = r"""
 part1_q4 = r"""
 **Your answer:**
 
-
-**a. We lower the temprature for the model to make the conditional distribution of the next word givn the current one as dissimilar to uniform distribution as possible. If the distribution were indeed uniform then taking maximum argument as criterion will yield very unpredictable and thus uninformative results.
+**
+a. We lower the temprature for the model to make the conditional distribution of the next word givn the current one as dissimilar to uniform distribution as possible. If the distribution were indeed uniform then taking maximum argument as criterion will yield very unpredictable and thus uninformative results.
 **
 
 **
 b. Probability over the output with temparature T defined as $ e^{y_i/T} / \sum{e^{y_i/T}}  $
 If T is very large than the exponent is very close to 0, then the numerator will be around 1 and denominator around n, then for any output we obtain a distribution similar to uniform distribution.
+**
+
+**
+c. Using a very low temperature means that the variance of the distribution is also small. This means the the model would be very far from a uniform distribution. As a cosequence to that, the generated model would choose only that chars that it's certain about, without taking any risks in choosing other chars. This would yield corpus with a very constrained number of chars, becuase the other chars didn't have a chance of being picked by the model.
 **
 
 """
