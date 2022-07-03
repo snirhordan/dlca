@@ -22,14 +22,14 @@ def part1_rnn_hyperparams():
     )
     # TODO: Set the hyperparameters to train the model.
     # ====== YOUR CODE: ======
-    hypers['batch_size'] = 500
-    hypers['seq_len'] = 128
-    hypers['h_dim'] = 500
+    hypers['batch_size'] = 250
+    hypers['seq_len'] = 100
+    hypers['h_dim'] = 250
     hypers['n_layers'] = 2
     hypers['dropout'] = 0.01
-    hypers['learn_rate'] = 0.0007
-    hypers['lr_sched_factor'] = 0.08
-    hypers['lr_sched_patience'] = 3
+    hypers['learn_rate'] = 0.005
+    hypers['lr_sched_factor'] = 0.05
+    hypers['lr_sched_patience'] = 1
     # ========================
     return hypers
 
@@ -44,27 +44,25 @@ def part1_generation_params():
     # ========================
     return start_seq, temperature
 
+
 part1_q1 = r"""
 **Your answer:**
         
-        Since we have a large corpus, this means it takes a long time to load into memory, and will slow down the processing. 
+        We have a large corpus, uploading the entire corpus at once onto the machine requires large memory resources, which slows down the training procss. 
         We avoid this phenomenon by breaking the corpus down into small parts and load one part at a time to the memory.
-
 """
 
 part1_q2 = r"""
 **Your answer:**
-            The generated text may clearly indicate a longer memory than the sequence length, the reason to this is the fact that we don't flush or reset hidden states. 
-            Instead, we keep them and pass them on to the next sequence in time.
-            The generated text learns connections between characters, and thus consumes more memory per patch.
+            Memory in RNN's is derived by the hidden state's ability to predict the next word in the sequence itwas trained on. Our network demonstrates a longer memory capability than just the lengths of the sequences we trained it on, because the hidden state learns the interconnections between sequences and genarlizes to te entire corpus.
 
 """
 
 part1_q3 = r"""
 **Your answer:**
             We don't mix the order of the batches when training because we want to train the modules in the correct order.
-            Training the modules according to the correct order insures keeping a correct and a logical relationships between the sentences and also regarding the context.
-            This helps our module in generating a text which is similar to the original text.
+            Training the modules according to the correct order ensures keeping a correct and logical relationship between the sentences. Additionally, it takes context into accont.
+            This helps our module in generating a text which resembles the original text.
             
 
 
@@ -78,18 +76,10 @@ part1_q4 = r"""
 **
 
 **
-b. The probability over the output with temparature T is defined as $ e^{y_i/T} / \sum{e^{y_i/T}}  $
-A very large T will yield an exponent that's very close to 0, as a result to that the numerator will be around 1 and denominator around n, and thus, for any output we obtain a distribution similar to uniform distribution.
-The variance of the distribution would thus be very high.
-This yield a model that chooses chars based on a uniform distribution without regarding the relationships between the different chars, as a consequence to that a lot of misspellings will occur.
+b. Probability over the output with temparature T defined as $ e^{y_i/T} / \sum{e^{y_i/T}}  $
+If T is very large than the exponent is very close to 0, then the numerator will be around 1 and denominator around n, then for any output we obtain a distribution similar to uniform distribution.
 **
 
-**
-c. Using a very low temperature means that the variance of the distribution is also small.
-This means the the model would be very far from a uniform distribution.
-As a cosequence to that, the generated model would choose only that chars that it's certain about, without taking any risks in choosing other chars.
-This would yield corpus with a very constrained number of chars, becuase the other chars didn't have a chance of being picked by the model.
-**
 """
 # ==============
 
@@ -98,7 +88,6 @@ This would yield corpus with a very constrained number of chars, becuase the oth
 # Part 2 answers
 
 PART2_CUSTOM_DATA_URL = None
-
 
 
 def part2_vae_hyperparams():
@@ -114,6 +103,7 @@ def part2_vae_hyperparams():
     )
     # ========================
     return hypers
+
 
 part2_q1 = r"""
 **Your answer:**
@@ -197,9 +187,9 @@ Therefore, when we train the generator and freeze the discriminator, we preserve
 
 part3_q2 = r"""
 **Your answer:**
-1) We shouldn't decide to stop training just because the generator loss is below a certain threshold, because if we look at the results, we can see that a low loss rate doesn't mean that by definition, a GAN given a good image will have a loss here , here it is defined by the ability of the discriminator to detect fake images, it does not measure sample quality. Sometimes the discriminator is not very good and the generator produces bad samples, but these samples can fool the discriminator.
+1) We shouldn't decide to stop training just because the generator loss is below a certain threshold, because if we look at the results, we can see that a low loss rate doesn't mean that the generator produces sound images. Loss is defined by the ability of the discriminator to detect fake images, it does not measure sample quality. Sometimes the discriminator is not very good and the generator produces bad samples, but these samples can fool the discriminator.
 
-2) If the discriminator loss remains constant and the generator loss decreases, it means that the discriminator cannot correctly identify real and fake samples. Generator improved and created better samples.
+2) If the discriminator loss remains constant and the generator loss decreases, it means that the discriminator cannot correctly identify real and fake samples. Generator improved and created better samples with respect to what the descriminator can distinguish as real or generated.
 """
 
 part3_q3 = r"""
@@ -209,6 +199,7 @@ If we compare it to the VAE, those generated by the GAN are more noisy and have 
 This might be due to the differences in architecture and loss function between both networks.
 For example, if we compare the loss functions of these two: the VAE loss function is directly related to the dataset, unlike the GAN loss function, it is from a game theory perspective and has no direct relationship with the dataset, so the general picture related refers to the entire image, including the background and its colors. 
 In the VAE dataset, we have a common face, and because of its architecture and care for mutual information in the input and decoded images, it preserves the common features in the resulting decoded images without preserving the background and its color .
+Additionally, the loss function in the VAE case is the reconstruction loss which is just the L2 norm in contrast with GAN which is dependent both on the descriminator and generator. 
 """
 
 # ==============
