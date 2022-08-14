@@ -2,5 +2,3 @@ https://github.com/LTS4/universal
 https://github.com/NetoPedro/Universal-Adversarial-Perturbations-Pytorch
 https://github.com/xiangchong1/adv-patch-paper-list
 
-token
-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
