@@ -52,7 +52,7 @@ class Attack:
                                p=self.p, dim=-1).view(pert.shape) * eps
         return pert
 
-    def warp_pert(self, pert, perspective1, perspective2, device=None): # what the hell is this
+    def warp_pert(self, pert, perspective1, perspective2, device=None):
         if self.pert_padding[0] > 0 or self.pert_padding[1] > 0:
             pert = F.pad(input=pert, pad=(self.pert_padding[1], self.pert_padding[1],
                                           self.pert_padding[0], self.pert_padding[0],
@@ -252,7 +252,7 @@ class Attack:
                          scale, y, clean_flow, target_pose, perspective1, perspective2, mask1, mask2, device=None):
         raise NotImplementedError('calc_sample_grad_split method not defined!')
 
-    def perturb_model_single(self, pert, img1_I0, img2_I0, intrinsic_I0, img1_delta, img2_delta, scale, mask1, mask2,
+    def perturb_model_single(self, pert, img1_I0, img2_I0, intrinsic_I0, img1_delta, img2_delta, scale, mask1, mask2, #whats img1_delta?
                       perspective1, perspective2, device=None):
         pert_warp1, pert_warp2 = self.warp_pert(pert, perspective1, perspective2, device)
         if device is None:
@@ -272,7 +272,7 @@ class Attack:
         torch.cuda.empty_cache()
         return img1_adv, img2_adv, output_adv
 
-    def perturb_model_split(self, pert, img1_I0, img2_I0, intrinsic_I0, img1_delta, img2_delta, scale, mask1, mask2,
+    def perturb_model_split(self, pert, img1_I0, img2_I0, intrinsic_I0, img1_delta, img2_delta, scale, mask1, mask2, #what are the masks?
                       perspective1, perspective2, device=None):
 
         sample_data_ind = list(range(img1_I0.shape[0] + 1))

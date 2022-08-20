@@ -134,7 +134,7 @@ class CalcCriterion:
 
 
 class VOCriterion:
-    def __init__(self, t_crit='rms', rot_crit='none', flow_crit='none', target_t_crit='none',
+    def __init__(self, t_crit='rms', rot_crit='fro', flow_crit='none', target_t_crit='none',
                  t_factor=1.0, rot_factor=1.0, flow_factor=1.0, target_t_factor=1.0):
 
         self.criterion_str = 't_crit_' + str(t_crit) + '_factor_' + str(t_factor).replace('.', '_')
@@ -165,8 +165,13 @@ class VOCriterion:
         else:
             self.calc_t_crit = self.calc_cumul_poses_t
 
-        self.calc_rot_crit = self.calc_none
-
+        if rot_crit == 'partial_rms_fro':
+            self.calc_rot_crit = self.calc_partial_poses_r
+        elif t_crit == 'mean_partial_rms_fro':
+            self.calc_t_crit = self.calc_mean_partial_poses_r
+        else:
+            self.calc_rot_crit = self.calc_none
+            
         self.calc_flow_crit = self.calc_none
 
         self.calc_target_t_product = True
@@ -193,6 +198,23 @@ class VOCriterion:
         return 0
 
     def calc_partial_poses_t(self, motions, motions_gt, target_pose):
+        rel_poses = self.rtvec_to_pose(motions)
+        rel_poses_gt = self.rtvec_to_pose(motions_gt)
+        t_errors_tot = torch.zeros(rel_poses.shape[0] + 1,
+                                   device=rel_poses.device, dtype=rel_poses.dtype)
+        target_t_errors_tot = torch.zeros(rel_poses.shape[0] + 1,
+                                   device=rel_poses.device, dtype=rel_poses.dtype)
+        for traj_s_idx in range(rel_poses.shape[0]):
+            partial_traj = rel_poses[traj_s_idx:]
+            partial_traj_gt = rel_poses_gt[traj_s_idx:]
+            cumul_poses = self.cumulative_poses(partial_traj)
+            cumul_poses_gt = self.cumulative_poses(partial_traj_gt)
+            t_error, target_t_error = self.translation_error(cumul_poses, cumul_poses_gt, target_pose)
+            t_errors_tot[traj_s_idx:] += t_error
+            target_t_errors_tot[traj_s_idx:] += target_t_error
+        return t_errors_tot, target_t_errors_tot
+
+    def calc_partial_poses_r(self, motions, motions_gt, target_pose):
         rel_poses = self.rtvec_to_pose(motions)
         rel_poses_gt = self.rtvec_to_pose(motions_gt)
         t_errors_tot = torch.zeros(rel_poses.shape[0] + 1,
@@ -239,7 +261,7 @@ class VOCriterion:
         t_error, target_t_error = self.translation_error(cumul_poses, cumul_poses_gt, target_pose)
         return t_error, target_t_error
 
-    def calc_rot_quat_product(self, motions, motions_gt):
+    def calc_rot_quat_product(self, motions, motions_gt): #where is this used??
         traj_rot_quat = angle_axis_to_quaternion(motions[:, 3:], order=QuaternionCoeffOrder.WXYZ)
         traj_rot_quat_gt = angle_axis_to_quaternion(motions_gt[:, 3:], order=QuaternionCoeffOrder.WXYZ)
         r_errors = self.rotation_quat_product(traj_rot_quat, traj_rot_quat_gt)
@@ -264,6 +286,16 @@ class VOCriterion:
             target_gt_t_hat = torch.nn.functional.normalize(target_gt_t, p=2, dim=1).unsqueeze(2)
             t_target_error = (cumul_delta_t.unsqueeze(1).bmm(target_gt_t_hat)).view(-1)
         return t_error, t_target_error
+
+    def rotation_error(self, cumul_poses, cumul_poses_gt, target):
+        cumul_delta_r = cumul_poses[:, 0:3, 0:3] - cumul_poses_gt[:, 0:3, 0:3]
+        r_error = torch.norm(cumul_delta_r, p='fro', dim=1)
+        r_target_error = 0
+        if target is not None:
+            target_gt_r = (cumul_poses_gt[:, 0:3, 0:3] - target) #not sure about target shape when passed to funtion 
+            target_gt_r_hat = torch.nn.functional.normalize(target_gt_r, p=2, dim=1).unsqueeze(2)
+            r_target_error = (cumul_delta_r.unsqueeze(1).bmm(target_gt_r_hat)).view(-1)
+        return r_error, r_target_error
 
     def rtvec_to_pose(self, rtvec):
         return rtvec_to_pose(rtvec)

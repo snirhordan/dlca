@@ -55,9 +55,7 @@ class PGD(Attack):
                                                             perspective2,
                                                             device)
         loss = self.criterion(output_adv, scale.to(device), y.to(device), target_pose.to(device), clean_flow.to(device))
-        sm = torch.nn.Softmax(dim=1)
-        loss = sm(loss) 
-        loss_sum = loss.sum(dim=0)#change to weighted sum, more weight onto the latest layer, maybe softmax
+        loss_sum = loss.sum(dim=0)
         grad = torch.autograd.grad(loss_sum, [pert])[0].detach()
 
         del img1_adv
