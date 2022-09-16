@@ -8,8 +8,8 @@ import numpy as np
 
 
 class Attack:
-    def __init__(self, model, criterion, test_criterion, norm, data_shape,
-                 sample_window_size=None, sample_window_stride=None,
+    def __init__(self, model, criterion, test_criterion, norm, data_shape, stochastic=False,
+                 sample_window_size=None, sample_window_stride=None, frames_exp_factor=0,
                  pert_padding=(0, 0)):
         self.model = model
         self.criterion = criterion
@@ -18,6 +18,7 @@ class Attack:
         self.p = float(self.norm[1:])
         self.data_len = data_shape[0]
         self.data_size = (data_shape[1], data_shape[2])
+        self.stochastic = stochastic
 
         self.sample_window_size = sample_window_size
         self.sample_window_stride = sample_window_stride
@@ -30,6 +31,10 @@ class Attack:
             self.calc_sample_grad_aux = self.calc_sample_grad_split
             self.perturb_model = self.perturb_model_split
 
+        frames_exp_factors = torch.tensor([frames_exp_factor * (1 + data_idx / self.data_len) #translation by 1
+                                                for data_idx in range(self.data_len + 1)],
+                                           dtype=torch.float32)
+        self.frame_weights = torch.exp(frames_exp_factors).view(-1, 1, 1, 1)
         self.pert_padding = pert_padding
 
     def random_initialization(self, pert, eps):
@@ -52,7 +57,7 @@ class Attack:
                                p=self.p, dim=-1).view(pert.shape) * eps
         return pert
 
-    def warp_pert(self, pert, perspective1, perspective2, device=None): # what the hell is this
+    def warp_pert(self, pert, perspective1, perspective2, device=None):
         if self.pert_padding[0] > 0 or self.pert_padding[1] > 0:
             pert = F.pad(input=pert, pad=(self.pert_padding[1], self.pert_padding[1],
                                           self.pert_padding[0], self.pert_padding[0],
@@ -175,6 +180,7 @@ class Attack:
                                                       scale, eval_y_list[data_idx], patch_pose,
                                                       window_size=self.sample_window_size,
                                                       device=device)
+                clean_loss *= self.frame_weights.view(-1)
             clean_output_list.append(clean_output)
             clean_loss_list.append(clean_loss)
 
@@ -224,6 +230,7 @@ class Attack:
         best_pert = torch.zeros(1, data_shape[1], data_shape[2], data_shape[3], device=device,
                                 dtype=dtype).to(device)
 
+        self.frame_weights = self.frame_weights.to(dtype)
         best_loss_list = [loss.detach().cpu().tolist() for loss in eval_clean_loss_list]
         best_loss_sum = np.sum([loss.sum().item() for loss in eval_clean_loss_list])
         all_loss = [best_loss_list]
@@ -242,6 +249,8 @@ class Attack:
                          scale, y, clean_flow, target_pose, perspective1, perspective2, mask1, mask2, device=None):
         grad = self.calc_sample_grad_aux(pert, img1_I0, img2_I0, intrinsic_I0, img1_delta, img2_delta,
                          scale, y, clean_flow, target_pose, perspective1, perspective2, mask1, mask2, device)
+        with torch.no_grad():
+            grad *= self.frame_weights.to(device)[1:]
         return grad
 
     def calc_sample_grad_single(self, pert, img1_I0, img2_I0, intrinsic_I0, img1_delta, img2_delta,
@@ -359,6 +368,7 @@ class Attack:
                 loss = self.test_criterion(output_adv, scale.to(device),
                                            eval_y_list[data_idx].to(device), patch_pose.to(device))
 
+                loss *= self.frame_weights.to(device).view(-1) #exponential tilting
                 loss_sum = loss.sum(dim=0)
                 loss_sum_list.append(loss_sum.item())
                 loss_list.append(loss.detach().cpu().tolist())
@@ -384,7 +394,7 @@ class Attack:
                 del loss_sum
                 torch.cuda.empty_cache()
 
-            loss_tot = np.sum(loss_sum_list)
+            loss_tot = np.sum(loss_sum_list) #here is the problem!!
             del loss_sum_list
             torch.cuda.empty_cache()
 
@@ -395,7 +405,7 @@ class Attack:
 
         pert_expand = pert.expand(data_shape[0], -1, -1, -1).to(device)
         grad_tot = torch.zeros_like(pert, requires_grad=False)
-
+        
         for data_idx, data in enumerate(data_loader):
             dataset_idx, dataset_name, traj_name, traj_len, \
             img1_I0, img2_I0, intrinsic_I0, \
@@ -432,10 +442,14 @@ class Attack:
 
         with torch.no_grad():
             grad = self.normalize_grad(grad_tot)
-            pert += multiplier * a_abs * grad
+            sqrt = torch.sqrt(a_abs + 0.01) #a abd is r_t -> rolling average
+            learn_rate = 0.03
+            theta_step =   learn_rate* torch.divide(grad,sqrt)
+            pert += multiplier * theta_step
             pert = self.project(pert, eps)
 
-        return pert
+        return pert, grad
+
 
     def perturb(self, data_loader, y_list, eps,
                                    targeted=False, device=None, eval_data_loader=None, eval_y_list=None):

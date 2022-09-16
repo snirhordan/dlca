@@ -18,9 +18,9 @@ class Const(Attack):
             pert_transform=None,
             default_pert_I1=False):
         super(Const, self).__init__(model, criterion=None, test_criterion=test_criterion,
-                                    norm=norm, data_shape=data_shape,
+                                    norm=norm, data_shape=data_shape, stochastic=False,
                                     sample_window_size=None, sample_window_stride=None,
-                                    pert_padding=pert_padding)
+                                     frames_exp_factor=0, pert_padding=pert_padding)
         self.set_pertubation(pert_path, pert_transform, default_pert_I1)
 
     def set_pertubation(self, pert_path=None, pert_transform=None, default_pert_I1=False):
@@ -144,6 +144,7 @@ class Const(Attack):
                 loss = self.test_criterion(output_adv, scale.to(device),
                                            eval_y_list[data_idx].to(device), patch_pose.to(device))
 
+                loss *= self.frame_weights.to(device).view(-1)
                 loss_sum = loss.sum(dim=0)
                 loss_sum_item = loss_sum.item()
                 print("loss_sum_item")

@@ -4,28 +4,30 @@ from attacks.attack import Attack
 import time
 from tqdm import tqdm
 import cv2
+from .noiser import Noise
 
-
-class PGD(Attack):
-    def __init__(
-            self,
-            model,
-            criterion,
-            test_criterion,
-            data_shape,
-            norm='Linf',
-            n_iter=20,
+class PGD(Attack):	
+    def __init__(	
+            self,	
+            model,	
+            criterion,	
+            test_criterion,	
+            data_shape,	
+            norm='Linf',	
+            n_iter=20,	
             n_restarts=1,
-            alpha=None,
-            rand_init=False,
-            sample_window_size=None,
-            sample_window_stride=None,
-            pert_padding=(0, 0),
-            init_pert_path=None,
-            init_pert_transform=None):
-        super(PGD, self).__init__(model, criterion, test_criterion, norm, data_shape,
-                                  sample_window_size, sample_window_stride,
-                                  pert_padding)
+            alpha=None,	
+            rand_init=False,	
+            stochastic=False,	
+            sample_window_size=None,	
+            sample_window_stride=None,	
+            frames_exp_factor=0,	
+            pert_padding=(0, 0),	
+            init_pert_path=None,	
+            init_pert_transform=None):	
+        super(PGD, self).__init__(model, criterion, test_criterion, norm, data_shape, stochastic,	
+                                  sample_window_size, sample_window_stride, frames_exp_factor,	
+                                  pert_padding)	
 
         self.alpha = alpha
 
@@ -55,9 +57,9 @@ class PGD(Attack):
                                                             perspective2,
                                                             device)
         loss = self.criterion(output_adv, scale.to(device), y.to(device), target_pose.to(device), clean_flow.to(device))
-        sm = torch.nn.Softmax(dim=1)
-        loss = sm(loss) 
-        loss_sum = loss.sum(dim=0)#change to weighted sum, more weight onto the latest layer, maybe softmax
+        #sm = torch.nn.Softmax()#change to weighted sum, more weight onto the latest layer, maybe softmax
+        #loss = sm(loss) 
+        loss_sum = loss.sum(dim=0)
         grad = torch.autograd.grad(loss_sum, [pert])[0].detach()
 
         del img1_adv
@@ -141,20 +143,20 @@ class PGD(Attack):
     def perturb(self, data_loader, y_list, eps,
                                    targeted=False, device=None, eval_data_loader=None, eval_y_list=None):
 
-        a_abs = np.abs(eps / self.n_iter) if self.alpha is None else np.abs(self.alpha)
+        #a_abs = np.abs(eps / self.n_iter) if self.alpha is None else np.abs(self.alpha)
+        
         multiplier = -1 if targeted else 1
         print("computing PGD attack with parameters:")
         print("attack random restarts: " + str(self.n_restarts))
         print("attack epochs: " + str(self.n_iter))
         print("attack norm: " + str(self.norm))
         print("attack epsilon norm limitation: " + str(eps))
-        print("attack step size: " + str(a_abs))
-
+        #print("attack step size: " + str(a_abs))
+        noiser = Noise()
         data_shape, dtype, eval_data_loader, eval_y_list, clean_flow_list, \
         eval_clean_loss_list, traj_clean_loss_mean_list, clean_loss_sum, \
         best_pert, best_loss_list, best_loss_sum, all_loss, all_best_loss = \
             self.compute_clean_baseline(data_loader, y_list, eval_data_loader, eval_y_list, device=device)
-
         for rest in tqdm(range(self.n_restarts)):
             print("restarting attack optimization, restart number: " + str(rest))
             opt_start_time = time.time()
@@ -171,14 +173,17 @@ class PGD(Attack):
                 print(" perturbation initialized to zero")
 
             pert = self.project(pert, eps)
-
+            a_abs = torch.clone(pert).detach()
+            decay = 0.9
+            decay_compliment = 1 - decay
+            #small = 0.01
             for k in tqdm(range(self.n_iter)):
                 print(" attack optimization epoch: " + str(k))
                 iter_start_time = time.time()
 
-                pert = self.gradient_ascent_step(pert, data_shape, data_loader, y_list, clean_flow_list,
+                pert, grad = self.gradient_ascent_step(pert, data_shape, data_loader, y_list, clean_flow_list,
                                         multiplier, a_abs, eps, device=device)
-
+                
                 step_runtime = time.time() - iter_start_time
                 print(" optimization epoch finished, epoch runtime: " + str(step_runtime))
 
@@ -186,9 +191,15 @@ class PGD(Attack):
                 eval_start_time = time.time()
 
                 with torch.no_grad():
+                    if k % 3 == 0:
+                        pert = noiser(pert, device)#add Gaussian noise
                     eval_loss_tot, eval_loss_list = self.attack_eval(pert, data_shape, eval_data_loader, eval_y_list,
                                                                      device)
-
+                    # update r_t (a_abs), rolling average
+                    first_value = decay * a_abs
+                    second_value = decay_compliment * (grad**2)
+                    a_abs = first_value + second_value
+                    
                     if eval_loss_tot > best_loss_sum:
                         best_pert = pert.clone().detach()
                         best_loss_list = eval_loss_list
@@ -219,4 +230,3 @@ class PGD(Attack):
             opt_runtime = time.time() - opt_start_time
             print("optimization restart finished, optimization runtime: " + str(opt_runtime))
         return best_pert.detach(), eval_clean_loss_list, all_loss, all_best_loss
-
