@@ -1,3 +1,4 @@
+from operator import index
 import torch
 from torch.nn import functional as F
 import kornia.geometry as kgm
@@ -31,7 +32,7 @@ class Attack:
             self.calc_sample_grad_aux = self.calc_sample_grad_split
             self.perturb_model = self.perturb_model_split
 
-        frames_exp_factors = torch.tensor([frames_exp_factor * (1 + data_idx / self.data_len) #translation by 1
+        frames_exp_factors = torch.tensor([frames_exp_factor * data_idx / self.data_len
                                                 for data_idx in range(self.data_len + 1)],
                                            dtype=torch.float32)
         self.frame_weights = torch.exp(frames_exp_factors).view(-1, 1, 1, 1)
@@ -42,13 +43,21 @@ class Attack:
             return torch.empty_like(pert).uniform_(1 - eps, eps)
         else:
             return torch.empty_like(pert).normal_(0, eps * eps).clamp_(0, 1)
-
     def normalize_grad(self, grad):
         if self.norm == 'Linf':
             return grad.sign()
         else:
             return F.normalize(grad.view(grad.shape[0], -1), p=self.p, dim=-1).view(grad.shape)
-
+    def sampler(self, pert, height, width, eps) -> torch.tensor:
+        patch = torch.zeros_like(pert.clone().detach())
+        rand_i = torch.randint(0, width - height, (1,))[0]
+        rand_j = torch.randint(0, width - height, (1,))[0]
+        for color in range(3):
+            update = 2*eps*torch.bernoulli(torch.tensor([0.5]))[0]
+            patch[rand_i:rand_i + height,rand_j:rand_j + height,color] += update * torch.ones((height,height))
+        return patch
+    def eps_project(self, eps, x, x_hat):
+        return torch.clamp(x_hat, x-eps, x+eps)
     def project(self, pert, eps):
         if self.norm == 'Linf':
             pert = torch.clamp(pert, 1-eps, eps)
@@ -368,7 +377,7 @@ class Attack:
                 loss = self.test_criterion(output_adv, scale.to(device),
                                            eval_y_list[data_idx].to(device), patch_pose.to(device))
 
-                loss *= self.frame_weights.to(device).view(-1) #exponential tilting
+                loss *= self.frame_weights.to(device).view(-1)
                 loss_sum = loss.sum(dim=0)
                 loss_sum_list.append(loss_sum.item())
                 loss_list.append(loss.detach().cpu().tolist())
@@ -394,7 +403,7 @@ class Attack:
                 del loss_sum
                 torch.cuda.empty_cache()
 
-            loss_tot = np.sum(loss_sum_list) #here is the problem!!
+            loss_tot = np.sum(loss_sum_list)
             del loss_sum_list
             torch.cuda.empty_cache()
 
@@ -405,7 +414,7 @@ class Attack:
 
         pert_expand = pert.expand(data_shape[0], -1, -1, -1).to(device)
         grad_tot = torch.zeros_like(pert, requires_grad=False)
-        
+
         for data_idx, data in enumerate(data_loader):
             dataset_idx, dataset_name, traj_name, traj_len, \
             img1_I0, img2_I0, intrinsic_I0, \
@@ -421,7 +430,12 @@ class Attack:
             grad = grad.sum(dim=0, keepdims=True).detach()
 
             with torch.no_grad():
-                grad_tot += grad
+                if self.stochastic:
+                    grad = self.normalize_grad(grad)
+                    pert += multiplier * a_abs * grad
+                    pert = self.project(pert, eps)
+                else:
+                    grad_tot += grad
 
             del grad
             del img1_I0
@@ -440,17 +454,88 @@ class Attack:
             del perspective
             torch.cuda.empty_cache()
 
-        with torch.no_grad():
-            grad = self.normalize_grad(grad_tot)
-            sqrt = torch.sqrt(a_abs + 0.01) #a abd is r_t -> rolling average
-            learn_rate = 0.03
-            theta_step =   learn_rate* torch.divide(grad,sqrt)
-            pert += multiplier * theta_step
-            pert = self.project(pert, eps)
+        if not self.stochastic:
+            with torch.no_grad():
+                grad = self.normalize_grad(grad_tot)
+                pert += multiplier * a_abs * grad
+                pert = self.project(pert, eps)
 
-        return pert, grad
-
+        return pert
 
     def perturb(self, data_loader, y_list, eps,
                                    targeted=False, device=None, eval_data_loader=None, eval_y_list=None):
         raise NotImplementedError('perturb method not defined!')
+    def a_gradient_ascent_step(self, pert, data_shape, data_loader, y_list, clean_flow_list,
+                             multiplier, a_abs, eps, device=None):
+        #x_t_minus_one = torch.zeros_like(pert).detach()
+        #z = torch.clone(pert).detach()
+        #x_t = torch.clone(pert).detach()
+        x_t_minus_one = torch.clone(pert).detach()
+        x_t = torch.zeros_like(pert).detach()
+        pert_expand = pert.expand(data_shape[0], -1, -1, -1).to(device)
+        grad_tot = torch.zeros_like(pert, requires_grad=False)
+
+        for data_idx, data in enumerate(data_loader):
+            if self.stochastic and (data_idx > 0):
+                pert_expand = x_t.expand(data_shape[0], -1, -1, -1).to(device)
+            dataset_idx, dataset_name, traj_name, traj_len, \
+            img1_I0, img2_I0, intrinsic_I0, \
+            img1_I1, img2_I1, intrinsic_I1, \
+            img1_delta, img2_delta, \
+            motions_gt, scale, pose_quat_gt, patch_pose, mask, perspective = extract_traj_data(data)
+            mask1, mask2, perspective1, perspective2 = self.prep_data(mask, perspective)
+            grad = self.calc_sample_grad(pert_expand, img1_I0, img2_I0, intrinsic_I0,
+                                         img1_delta, img2_delta,
+                                         scale, y_list[data_idx], clean_flow_list[data_idx], patch_pose,
+                                         perspective1, perspective2,
+                                         mask1, mask2, device=device)
+            grad = grad.sum(dim=0, keepdims=True).detach()
+
+            with torch.no_grad():
+                if self.stochastic:
+                    if data_idx == 0:
+                        grad = self.normalize_grad(grad)
+                        #z += multiplier * a_abs * grad
+                        #z = self.project(z, eps)
+                        z = x_t_minus_one + multiplier * a_abs * grad
+                        x_t = self.project(z, eps)
+                    else:
+                        grad = self.normalize_grad(grad)
+                        #z += multiplier * a_abs * grad
+                        #z = self.project(z, eps)
+                        z = x_t + multiplier * a_abs * grad
+                        z = self.project(z, eps)
+                        alpha = 0.75 # as in paper
+                        momentum = torch.mul(( z - x_t ),alpha) + torch.mul((x_t - x_t_minus_one),(1-alpha))
+                        #momentum = self.normalize_grad(momentum) # not sure necessary
+                        x_t_minus_one = x_t.clone().detach()
+                        x_t = self.project(x_t + momentum, eps)
+                        
+                else:
+                    grad_tot += grad
+
+            del grad
+            del img1_I0
+            del img2_I0
+            del intrinsic_I0
+            del img1_I1
+            del img2_I1
+            del intrinsic_I1
+            del img1_delta
+            del img2_delta
+            del motions_gt
+            del scale
+            del pose_quat_gt
+            del patch_pose
+            del mask
+            del perspective
+            torch.cuda.empty_cache()
+
+        if not self.stochastic:
+            with torch.no_grad():
+                grad = self.normalize_grad(grad_tot)
+                z += multiplier * a_abs * grad
+                z = self.project(z, eps)
+
+        return z
+
